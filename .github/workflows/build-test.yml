@@ -1,6 +1,8 @@
 name: Build and Test
 on:
-  push
+  pull_request:
+    branches:
+      [ "master" ]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -15,3 +17,15 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: mvn -B package --file pom.xml
+      - name: Add coverage to PR
+        id: jacoco
+        uses: madrapps/jacoco-report
+        with:
+          paths: |
+            ${{ github.workspace }}/**/target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 10
+          min-coverage-changed-files: 10
+          title: '# :lobster: Coverage Report'
+          pass-emoji: ':white_check_mark:'
+          fail-emoji: ':x:'
