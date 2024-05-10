@@ -18,3 +18,5 @@
 .springBeans
 .sts4-cache
 
+src/main/resources/git.properties
+target/
