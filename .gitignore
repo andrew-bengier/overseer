@@ -1,5 +1,3 @@
-# Ignore following files/patterns for GIT
-
 ### IntelliJ IDEA ###
 .idea
 *.iws
@@ -20,3 +18,16 @@
 
 src/main/resources/git.properties
 target/
+
+# dependencies
+/ui/node_modules/
+
+# testing
+/ui/coverage
+/ui/npm-debug.log*
+
+# production
+/dest
+
+# misc
+.DS_Store

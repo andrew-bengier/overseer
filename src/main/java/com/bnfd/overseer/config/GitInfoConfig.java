@@ -1,17 +1,15 @@
 package com.bnfd.overseer.config;
 
+import com.bnfd.overseer.model.api.info.*;
+import org.springframework.boot.context.properties.*;
 import org.springframework.context.annotation.*;
-import org.springframework.context.support.*;
-import org.springframework.core.io.*;
 
 @Configuration
+@PropertySource("classpath:git.properties")
 public class GitInfoConfig {
     @Bean
-    public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
-        PropertySourcesPlaceholderConfigurer propsConfig = new PropertySourcesPlaceholderConfigurer();
-        propsConfig.setLocation(new ClassPathResource("git.properties"));
-        propsConfig.setIgnoreResourceNotFound(true);
-        propsConfig.setIgnoreUnresolvablePlaceholders(true);
-        return propsConfig;
+    @ConfigurationProperties(prefix = "git")
+    public GitInfo gitInfo() {
+        return new GitInfo();
     }
 }
