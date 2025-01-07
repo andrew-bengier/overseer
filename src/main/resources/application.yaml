@@ -1,23 +1,5 @@
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, loggers, logfile, metrics, mappings, scheduledtasks
-  info:
-    git:
-      mode: full
-      enabled: 'true'
-  endpoint:
-    health:
-      show-details: always
-    loggers:
-      enabled: 'true'
-info:
-  app:
-    version: '@project.version@'
-    name: '@project.name@'
 spring:
   application:
-      name: Overseer
+    name: Overseer
   banner:
     location: classpath:banner.txt

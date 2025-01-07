@@ -20,6 +20,7 @@ src/main/resources/git.properties
 target/
 
 # dependencies
+/ui/node/
 /ui/node_modules/
 
 # testing
@@ -28,6 +29,8 @@ target/
 
 # production
 /dest
+/build/release/
+/build/build_app.xml
 
 # misc
 .DS_Store

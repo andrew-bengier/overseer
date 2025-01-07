@@ -1,11 +1,20 @@
-import logo from './logo.svg';
+import React from 'react';
+import icon from './icon.svg';
 import './App.css';
 
+import { getApiInfo } from './services/InfoService';
+
 function App() {
+  React.useEffect(() => {
+    getApiInfo()
+      .then(response => console.log(response.data))
+      .catch(error => console.log(error));
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+        <img src={icon} className="App-logo" alt="icon" />
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
