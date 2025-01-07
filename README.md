@@ -1,22 +1,60 @@
-# Getting Started
+# Overseer
+---------------------------------
 
-### Reference Documentation
-For further reference, please consider the following sections:
+#### Full Control of media server
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/3.2.5/maven-plugin/reference/html/)
-* [Create an OCI image](https://docs.spring.io/spring-boot/docs/3.2.5/maven-plugin/reference/html/#build-image)
-* [Spring Boot DevTools](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#using.devtools)
-* [Spring Web](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#web)
-* [Spring Data JPA](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#data.sql.jpa-and-spring-data)
-* [Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/3.2.5/reference/htmlsingle/index.html#actuator)
+[![Build and Test](https://github.com/andrew-bengier/overseer/actions/workflows/build-test.yml/badge.svg?branch=main)](https://github.com/andrew-bengier/overseer/actions/workflows/build-test.yml)
 
-### Guides
-The following guides illustrate how to use some features concretely:
+[//]: # ([![Coverage Status]&#40;https://coveralls.io/repos/github/codecentric/springboot-sample-app/badge.svg?branch=master&#41;]&#40;https://coveralls.io/github/codecentric/springboot-sample-app?branch=master&#41;)
 
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
-* [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
-* [Building a RESTful Web Service with Spring Boot Actuator](https://spring.io/guides/gs/actuator-service/)
+[//]: # ([![License]&#40;http://img.shields.io/:license-apache-blue.svg&#41;]&#40;http://www.apache.org/licenses/LICENSE-2.0.html&#41;)
 
+### Current platforms supported:
+
+- [Plex](https://www.plex.tv/)
+
+### About
+
+### Running Options
+
+### Requirements
+
+### Development
+
+## Support
+
+Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+
+## Roadmap
+
+If you have ideas for releases in the future, it is a good idea to list them in the README.
+
+## Contributing
+
+State if you are open to contributions and what your requirements are for accepting them.
+
+For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that
+they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future
+self.
+
+You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes
+inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium
+server for testing in a browser.
+
+## Authors and acknowledgment
+
+Show your appreciation to those who have contributed to the project.
+
+## License
+
+For open source projects, say how it is licensed.
+
+## Project status
+
+If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped
+completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can
+also make an explicit request for maintainers.
+
+## Copyright
+
+Released under the Apache License 2.0. See the [LICENSE](https://github.com/codecentric/springboot-sample-app/blob/master/LICENSE) file.
