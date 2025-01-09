@@ -16,8 +16,8 @@
 .springBeans
 .sts4-cache
 
-src/main/resources/git.properties
-target/
+# misc
+.DS_Store
 
 # dependencies
 /ui/node/
@@ -31,6 +31,9 @@ target/
 /dest
 /build/release/
 /build/build_app.xml
+target/
+/data/
 
-# misc
-.DS_Store
+# local
+src/main/resources/git.properties
+/local-api.env

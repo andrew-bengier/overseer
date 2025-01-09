@@ -6,11 +6,11 @@ import org.springframework.http.*;
 import java.util.*;
 
 /**
- * OverseerBadRequestException - HttpStatus.BAD_REQUEST.
+ * OverseerConflictException - HttpStatus.CONFLICT.
  */
-public class OverseerBadRequestException extends RuntimeException {
+public class OverseerConflictException extends RuntimeException {
     // region - Class Variables -
-    private static final HttpStatus statusCode = HttpStatus.BAD_REQUEST;
+    private static final HttpStatus statusCode = HttpStatus.CONFLICT;
 
     private static final String message = statusCode.getReasonPhrase();
 
@@ -18,29 +18,29 @@ public class OverseerBadRequestException extends RuntimeException {
     // endregion - Class Variables -
 
     // region - Constructors -
-    public OverseerBadRequestException() {
+    public OverseerConflictException() {
         this(message);
     }
 
-    public OverseerBadRequestException(String message) {
+    public OverseerConflictException(String message) {
         super(message);
 
         this.errors = Collections.emptyList();
     }
 
-    public OverseerBadRequestException(List<String> errors) {
+    public OverseerConflictException(List<String> errors) {
         super(message);
 
         this.errors = errors;
     }
 
-    public OverseerBadRequestException(String message, List<String> errors) {
+    public OverseerConflictException(String message, List<String> errors) {
         super(message);
 
         this.errors = errors;
     }
 
-    public OverseerBadRequestException(String message, Throwable throwable) {
+    public OverseerConflictException(String message, Throwable throwable) {
         super(message, throwable);
 
         this.errors = Collections.emptyList();

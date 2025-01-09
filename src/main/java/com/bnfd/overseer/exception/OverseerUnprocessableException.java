@@ -6,50 +6,49 @@ import org.springframework.http.*;
 import java.util.*;
 
 /**
- * OverseerException.
- * If no subclass is provided, the defaults to HttpStatus.INTERNAL_SERVER_ERROR
+ * OverseerUnprocessableException - HttpStatus.UNPROCESSABLE_ENTITY.
  */
-public class OverseerException extends RuntimeException {
+public class OverseerUnprocessableException extends RuntimeException {
     // region - Class Variables -
-    private final HttpStatus statusCode;
+    private static final HttpStatus statusCode = HttpStatus.UNPROCESSABLE_ENTITY;
 
-    private final String message;
+    private static final String message = statusCode.getReasonPhrase();
 
     private final List<String> errors;
     // endregion - Class Variables -
 
     // region - Constructors -
-    public OverseerException() {
-        this(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+    public OverseerUnprocessableException() {
+        this(message);
     }
 
-    public OverseerException(String message) {
+    public OverseerUnprocessableException(String message) {
         super(message);
 
-        this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-        this.message = message;
         this.errors = Collections.emptyList();
     }
 
-    public OverseerException(String message, List<String> errors) {
+    public OverseerUnprocessableException(List<String> errors) {
         super(message);
 
-        this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-        this.message = message;
         this.errors = errors;
     }
 
-    public OverseerException(String message, Throwable throwable) {
+    public OverseerUnprocessableException(String message, List<String> errors) {
+        super(message);
+
+        this.errors = errors;
+    }
+
+    public OverseerUnprocessableException(String message, Throwable throwable) {
         super(message, throwable);
 
-        this.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-        this.message = message;
         this.errors = Collections.emptyList();
     }
     // endregion - Constructors -
 
     // region - Accessor Methods -
-    public HttpStatus getStatusCode() {
+    public static HttpStatus getStatusCode() {
         return statusCode;
     }
 

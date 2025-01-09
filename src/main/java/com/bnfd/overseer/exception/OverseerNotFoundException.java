@@ -6,11 +6,11 @@ import org.springframework.http.*;
 import java.util.*;
 
 /**
- * OverseerUnprocessableException - HttpStatus.UNPROCESSABLE_ENTITY.
+ * OverseerNotFoundException - HttpStatus.NOT_FOUND.
  */
-public class OverseerUnprocessableException extends RuntimeException {
+public class OverseerNotFoundException extends RuntimeException {
     // region - Class Variables -
-    private static final HttpStatus statusCode = HttpStatus.UNPROCESSABLE_ENTITY;
+    private static final HttpStatus statusCode = HttpStatus.NOT_FOUND;
 
     private static final String message = statusCode.getReasonPhrase();
 
@@ -18,23 +18,23 @@ public class OverseerUnprocessableException extends RuntimeException {
     // endregion - Class Variables -
 
     // region - Constructors -
-    public OverseerUnprocessableException() {
+    public OverseerNotFoundException() {
         this(message);
     }
 
-    public OverseerUnprocessableException(String message) {
+    public OverseerNotFoundException(String message) {
         super(message);
 
         this.errors = Collections.emptyList();
     }
 
-    public OverseerUnprocessableException(String message, List<String> errors) {
+    public OverseerNotFoundException(String message, List<String> errors) {
         super(message);
 
         this.errors = errors;
     }
 
-    public OverseerUnprocessableException(String message, Throwable throwable) {
+    public OverseerNotFoundException(String message, Throwable throwable) {
         super(message, throwable);
 
         this.errors = Collections.emptyList();
@@ -42,7 +42,7 @@ public class OverseerUnprocessableException extends RuntimeException {
     // endregion - Constructors -
 
     // region - Accessor Methods -
-    public HttpStatus getStatusCode() {
+    public static HttpStatus getStatusCode() {
         return statusCode;
     }
 

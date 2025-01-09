@@ -25,9 +25,12 @@
         <!-- region - Versions - -->
         <java.version>21</java.version>
 
+        <apache.commons.lang3.version>3.17.0</apache.commons.lang3.version>
+
         <frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
 
         <git.info.version>4.9.10</git.info.version>
+        <google.gson.version>2.11.0</google.gson.version>
 
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <maven.failsafe.version>3.5.2</maven.failsafe.version>
@@ -35,10 +38,11 @@
         <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.surefire.version>3.5.2</maven.surefire.version>
+        <mockito.version>5.15.2</mockito.version>
+        <modelmapper.version>3.2.2</modelmapper.version>
 
         <node.version>v22.12.0</node.version>
         <npm.version>9.0.0</npm.version>
-        <yarn.version>v1.22.22</yarn.version>
 
         <springboot.maven.plugin.version>3.4.1</springboot.maven.plugin.version>
         <!-- endregion - Versions - -->
@@ -261,13 +265,35 @@
         </dependency>
         <!-- endregion - Springboot - -->
 
+        <!--  region - Apache -  -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${apache.commons.lang3.version}</version>
+        </dependency>
+        <!--  endregion - Apache -  -->
+
         <!-- region - Data - -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>${modelmapper.version}</version>
+        </dependency>
         <!-- endregion - Data - -->
+
+        <!-- region - Google - -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${google.gson.version}</version>
+        </dependency>
+        <!-- endregion - Google - -->
 
         <!-- region - Lombok - -->
         <dependency>
@@ -276,6 +302,26 @@
             <optional>true</optional>
         </dependency>
         <!-- endregion - Lombok - -->
+
+        <!-- region - Testing - -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- endregion - Testing - -->
     </dependencies>
 
     <pluginRepositories>

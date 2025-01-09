@@ -6,11 +6,11 @@ import org.springframework.http.*;
 import java.util.*;
 
 /**
- * OverseerNotFoundException - HttpStatus.NOT_FOUND.
+ * OverseerNoContentException - HttpStatus.NO_CONTENT.
  */
-public class OverseerNotFoundException extends RuntimeException {
+public class OverseerNoContentException extends RuntimeException {
     // region - Class Variables -
-    private static final HttpStatus statusCode = HttpStatus.NOT_FOUND;
+    private static final HttpStatus statusCode = HttpStatus.NO_CONTENT;
 
     private static final String message = statusCode.getReasonPhrase();
 
@@ -18,23 +18,23 @@ public class OverseerNotFoundException extends RuntimeException {
     // endregion - Class Variables -
 
     // region - Constructors -
-    public OverseerNotFoundException() {
+    public OverseerNoContentException() {
         this(message);
     }
 
-    public OverseerNotFoundException(String message) {
+    public OverseerNoContentException(String message) {
         super(message);
 
         this.errors = Collections.emptyList();
     }
 
-    public OverseerNotFoundException(String message, List<String> errors) {
+    public OverseerNoContentException(String message, List<String> errors) {
         super(message);
 
         this.errors = errors;
     }
 
-    public OverseerNotFoundException(String message, Throwable throwable) {
+    public OverseerNoContentException(String message, Throwable throwable) {
         super(message, throwable);
 
         this.errors = Collections.emptyList();
