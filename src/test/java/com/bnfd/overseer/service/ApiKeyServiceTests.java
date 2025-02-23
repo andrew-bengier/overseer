@@ -2,8 +2,9 @@ package com.bnfd.overseer.service;
 
 import com.bnfd.overseer.exception.*;
 import com.bnfd.overseer.model.api.*;
+import com.bnfd.overseer.model.constants.*;
 import com.bnfd.overseer.model.mapper.*;
-import com.bnfd.overseer.model.persistence.*;
+import com.bnfd.overseer.model.persistence.apikeys.*;
 import com.bnfd.overseer.repository.*;
 import jakarta.persistence.*;
 import lombok.extern.slf4j.*;
@@ -18,6 +19,7 @@ import org.springframework.util.*;
 
 import java.util.*;
 
+// TODO: update this with proper errors
 @Slf4j
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
@@ -49,7 +51,7 @@ public class ApiKeyServiceTests {
                     .thenAnswer(
                             invocation -> {
                                 ApiKeyEntity dbResult = invocation.getArgument(0);
-                                dbResult.setId(new Random().nextInt());
+                                dbResult.setId(UUID.randomUUID().toString());
                                 return dbResult;
                             }
                     );
@@ -97,11 +99,11 @@ public class ApiKeyServiceTests {
             public void testGetApiKeyById_acceptableInputs_expectModel() {
                 ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
                 ApiKeyEntity testKey = new ApiKeyEntity();
-                testKey.setId(new Random().nextInt());
+                testKey.setId(UUID.randomUUID().toString());
                 testKey.setName(type.name());
                 testKey.setKey("test");
 
-                Mockito.when(apiKeyRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(testKey));
+                Mockito.when(apiKeyRepository.findById(Mockito.anyString())).thenReturn(Optional.of(testKey));
 
                 ApiKey results = apiKeyService.getApiKeyById(testKey.getId());
 
@@ -110,20 +112,20 @@ public class ApiKeyServiceTests {
                 Assertions.assertEquals(testKey.getKey(), results.getKey());
                 Assertions.assertEquals(testKey.getUrl(), results.getUrl());
 
-                Mockito.verify(apiKeyService, Mockito.times(1)).getApiKeyById(Mockito.anyInt());
-                Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyInt());
+                Mockito.verify(apiKeyService, Mockito.times(1)).getApiKeyById(Mockito.anyString());
+                Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyString());
                 Mockito.verify(overseerMapper, Mockito.times(1)).map(Mockito.any(ApiKeyEntity.class), Mockito.eq(ApiKey.class));
             }
 
             @Test
             @DisplayName("Not Found - Expect Error")
             public void testGetApiKeyById_notFound_expectError() {
-                Mockito.when(apiKeyRepository.findById(Mockito.anyInt())).thenReturn(null);
+                Mockito.when(apiKeyRepository.findById(Mockito.anyString())).thenReturn(null);
 
-                Assertions.assertThrows(RuntimeException.class, () -> apiKeyService.getApiKeyById(new Random().nextInt()));
+                Assertions.assertThrows(RuntimeException.class, () -> apiKeyService.getApiKeyById(UUID.randomUUID().toString()));
 
-                Mockito.verify(apiKeyService, Mockito.times(1)).getApiKeyById(Mockito.anyInt());
-                Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyInt());
+                Mockito.verify(apiKeyService, Mockito.times(1)).getApiKeyById(Mockito.anyString());
+                Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyString());
                 Mockito.verifyNoInteractions(overseerMapper);
             }
         }
@@ -136,7 +138,7 @@ public class ApiKeyServiceTests {
             public void testGetAllApiKeysByName_acceptableInputs_expectModel() {
                 ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
                 ApiKeyEntity testKey = new ApiKeyEntity();
-                testKey.setId(new Random().nextInt());
+                testKey.setId(UUID.randomUUID().toString());
                 testKey.setName(type.name());
                 testKey.setKey("test");
 
@@ -173,7 +175,7 @@ public class ApiKeyServiceTests {
             public void testGetAllApiKeys_acceptableInputs_expectModel() {
                 ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
                 ApiKeyEntity testKey = new ApiKeyEntity();
-                testKey.setId(new Random().nextInt());
+                testKey.setId(UUID.randomUUID().toString());
                 testKey.setName(type.name());
                 testKey.setKey("test");
 
@@ -209,7 +211,7 @@ public class ApiKeyServiceTests {
         @Test
         @DisplayName("Acceptable Inputs - Expect Model")
         public void testUpdateApiKey_acceptableInputs_expectModel() {
-            Integer testId = new Random().nextInt();
+            String testId = UUID.randomUUID().toString();
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
 
             ApiKeyEntity testEntity = new ApiKeyEntity();
@@ -222,7 +224,7 @@ public class ApiKeyServiceTests {
             testKey.setName(type.name());
             testKey.setKey("updatedTest");
 
-            Mockito.when(apiKeyRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(testEntity));
+            Mockito.when(apiKeyRepository.findById(Mockito.anyString())).thenReturn(Optional.of(testEntity));
             Mockito.when(apiKeyRepository.save(Mockito.any(ApiKeyEntity.class))).thenAnswer(AdditionalAnswers.returnsFirstArg());
 
             ApiKey results = apiKeyService.updateApiKey(testKey);
@@ -233,7 +235,7 @@ public class ApiKeyServiceTests {
             Assertions.assertEquals(testKey.getUrl(), results.getUrl());
 
             Mockito.verify(apiKeyService, Mockito.times(1)).updateApiKey(Mockito.any(ApiKey.class));
-            Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyInt());
+            Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyString());
             Mockito.verify(overseerMapper, Mockito.times(1)).map(Mockito.any(ApiKey.class), Mockito.eq(ApiKeyEntity.class));
             Mockito.verify(apiKeyRepository, Mockito.times(1)).save(Mockito.any(ApiKeyEntity.class));
             Mockito.verify(overseerMapper, Mockito.times(1)).map(Mockito.any(ApiKeyEntity.class), Mockito.eq(ApiKey.class));
@@ -244,16 +246,16 @@ public class ApiKeyServiceTests {
         public void testUpdateApiKey_notFound_expectModel() {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
-            testKey.setId(new Random().nextInt());
+            testKey.setId(UUID.randomUUID().toString());
             testKey.setName(type.name());
             testKey.setKey("test");
 
-            Mockito.when(apiKeyRepository.findById(Mockito.anyInt())).thenReturn(null);
+            Mockito.when(apiKeyRepository.findById(Mockito.anyString())).thenReturn(null);
 
             Assertions.assertThrows(RuntimeException.class, () -> apiKeyService.updateApiKey(testKey));
 
             Mockito.verify(apiKeyService, Mockito.times(1)).updateApiKey(Mockito.any(ApiKey.class));
-            Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyInt());
+            Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyString());
             Mockito.verify(apiKeyRepository, Mockito.times(0)).save(Mockito.any(ApiKeyEntity.class));
             Mockito.verifyNoInteractions(overseerMapper);
         }
@@ -261,7 +263,7 @@ public class ApiKeyServiceTests {
         @Test
         @DisplayName("Invalid Duplicate - Expect Error")
         public void testAddApiKey_invalidDuplicate_expectError() {
-            Integer testId = new Random().nextInt();
+            String testId = UUID.randomUUID().toString();
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
 
             ApiKeyEntity testEntity = new ApiKeyEntity();
@@ -274,14 +276,14 @@ public class ApiKeyServiceTests {
             testKey.setName(type.name());
             testKey.setKey("updatedTest");
 
-            Mockito.when(apiKeyRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(testEntity));
+            Mockito.when(apiKeyRepository.findById(Mockito.anyString())).thenReturn(Optional.of(testEntity));
 
             Mockito.doThrow(new PersistenceException()).when(apiKeyRepository).save(Mockito.any(ApiKeyEntity.class));
 
             Assertions.assertThrows(OverseerConflictException.class, () -> apiKeyService.updateApiKey(testKey));
 
             Mockito.verify(apiKeyService, Mockito.times(1)).updateApiKey(Mockito.any(ApiKey.class));
-            Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyInt());
+            Mockito.verify(apiKeyRepository, Mockito.times(1)).findById(Mockito.anyString());
             Mockito.verify(overseerMapper, Mockito.times(1)).map(Mockito.any(ApiKey.class), Mockito.eq(ApiKeyEntity.class));
             Mockito.verify(apiKeyRepository, Mockito.times(1)).save(Mockito.any(ApiKeyEntity.class));
             Mockito.verify(overseerMapper, Mockito.times(0)).map(Mockito.any(ApiKeyEntity.class), Mockito.eq(ApiKey.class));
@@ -296,27 +298,27 @@ public class ApiKeyServiceTests {
         public void testRemoveApiKey_acceptableInputs_expectNothing() {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKeyEntity testKey = new ApiKeyEntity();
-            testKey.setId(new Random().nextInt());
+            testKey.setId(UUID.randomUUID().toString());
             testKey.setName(type.name());
             testKey.setKey("test");
 
-            Mockito.doNothing().when(apiKeyRepository).deleteById(Mockito.anyInt());
+            Mockito.doNothing().when(apiKeyRepository).deleteById(Mockito.anyString());
 
             apiKeyService.removeApiKey(testKey.getId());
 
-            Mockito.verify(apiKeyService, Mockito.times(1)).removeApiKey(Mockito.anyInt());
-            Mockito.verify(apiKeyRepository, Mockito.times(1)).deleteById(Mockito.anyInt());
+            Mockito.verify(apiKeyService, Mockito.times(1)).removeApiKey(Mockito.anyString());
+            Mockito.verify(apiKeyRepository, Mockito.times(1)).deleteById(Mockito.anyString());
         }
 
         @Test
         @DisplayName("Not Found - Expect Error")
         public void testRemoveApiKey_notFound_expectError() {
-            Mockito.doThrow(EmptyResultDataAccessException.class).when(apiKeyRepository).deleteById(Mockito.anyInt());
+            Mockito.doThrow(EmptyResultDataAccessException.class).when(apiKeyRepository).deleteById(Mockito.anyString());
 
-            Assertions.assertThrows(RuntimeException.class, () -> apiKeyService.removeApiKey(new Random().nextInt()));
+            Assertions.assertThrows(RuntimeException.class, () -> apiKeyService.removeApiKey(UUID.randomUUID().toString()));
 
-            Mockito.verify(apiKeyService, Mockito.times(1)).removeApiKey(Mockito.anyInt());
-            Mockito.verify(apiKeyRepository, Mockito.times(1)).deleteById(Mockito.anyInt());
+            Mockito.verify(apiKeyService, Mockito.times(1)).removeApiKey(Mockito.anyString());
+            Mockito.verify(apiKeyRepository, Mockito.times(1)).deleteById(Mockito.anyString());
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.bnfd.overseer.model.persistence;
+package com.bnfd.overseer.model.persistence.apikeys;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +9,7 @@ import lombok.*;
 public class ApiKeyEntity {
     // region - Class Variables -
     @Id
-    private Integer id;
+    private String id;
 
     private String name;
     private String key;

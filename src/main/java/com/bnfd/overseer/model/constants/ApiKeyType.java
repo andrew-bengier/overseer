@@ -1,4 +1,4 @@
-package com.bnfd.overseer.model.api;
+package com.bnfd.overseer.model.constants;
 
 public enum ApiKeyType {
     PLEX,

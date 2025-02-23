@@ -51,6 +51,13 @@ public class ControllerResponseAdvice extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(ex.toString(), OverseerUnprocessableException.getStatusCode());
     }
 
+    @ExceptionHandler(OverseerPreConditionRequiredException.class)
+    public ResponseEntity<Object> handlePreConditionRequiredException(OverseerPreConditionRequiredException ex, WebRequest request) {
+        log.error(ex.getMessage(), ex);
+
+        return new ResponseEntity<>(ex.toString(), OverseerPreConditionRequiredException.getStatusCode());
+    }
+
     @ExceptionHandler(OverseerException.class)
     public ResponseEntity<Object> handleProcessingException(OverseerException ex, WebRequest request) {
         log.error(ex.getMessage(), ex);

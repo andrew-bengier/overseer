@@ -1,31 +1,24 @@
 package com.bnfd.overseer.model.api;
 
+import com.bnfd.overseer.model.constants.*;
 import com.google.gson.*;
 import org.apache.commons.lang3.builder.*;
 
 import java.io.*;
 import java.util.*;
 
-public class ApiKey implements Serializable, Comparable<ApiKey> {
+public class Action implements Serializable, Comparable<Action> {
     // region - Class Variables -
     private String id;
-
+    private ActionType type;
     private String name;
-    private String key;
-    private String url;
+    private String val;
     // endregion - Class Variables -
 
     // region - Constructors -
-    public ApiKey() {
+    public Action() {
     }
-
-    public ApiKey(String id, String name, String key, String url) {
-        this.id = id;
-        this.name = name;
-        this.key = key;
-        this.url = url;
-    }
-// endregion - Constructors -
+    // endregion - Constructors -
 
     // region - Accessor Methods -
     public String getId() {
@@ -36,6 +29,14 @@ public class ApiKey implements Serializable, Comparable<ApiKey> {
         this.id = id;
     }
 
+    public ActionType getType() {
+        return type;
+    }
+
+    public void setType(ActionType type) {
+        this.type = type;
+    }
+
     public String getName() {
         return name;
     }
@@ -44,29 +45,20 @@ public class ApiKey implements Serializable, Comparable<ApiKey> {
         this.name = name;
     }
 
-    public String getKey() {
-        return key;
+    public String getVal() {
+        return val;
     }
 
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
+    public void setVal(String val) {
+        this.val = val;
     }
     // endregion - Accessor Methods -
 
-    // region - Overridden Methods -
+    // region - Overridden Methods
     @Override
-    public int compareTo(ApiKey apiKey) {
-        return Comparator.comparing(ApiKey::getName)
-                .thenComparing(ApiKey::getId)
-                .compare(this, apiKey);
+    public int compareTo(Action action) {
+        return Comparator.comparing(Action::getName, String.CASE_INSENSITIVE_ORDER)
+                .compare(this, action);
     }
 
     @Override
@@ -76,7 +68,7 @@ public class ApiKey implements Serializable, Comparable<ApiKey> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ApiKey) {
+        if (obj instanceof Action) {
             return EqualsBuilder.reflectionEquals(obj, this);
         } else {
             return false;
@@ -90,5 +82,5 @@ public class ApiKey implements Serializable, Comparable<ApiKey> {
                 .create();
         return gson.toJson(this);
     }
-    // endregion - Overridden Methods -
+    // endregion - Overridden Methods
 }

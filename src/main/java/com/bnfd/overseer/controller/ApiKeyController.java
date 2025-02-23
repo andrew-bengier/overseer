@@ -13,9 +13,9 @@ import java.util.*;
 
 @Slf4j
 @RestController
-@RequestMapping("apikeys")
+@RequestMapping("api/apikeys")
 @CrossOrigin(origins = "http://localhost:3000")
-public class ApiKeyController extends ApiController {
+public class ApiKeyController {
     // region - Class Variables -
     private final ValidationService validationService;
 
@@ -43,7 +43,7 @@ public class ApiKeyController extends ApiController {
 
     // region - GET -
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getApiKeyById(@PathVariable Integer id) {
+    public ResponseEntity<?> getApiKeyById(@PathVariable String id) {
         log.info(String.format("Retrieving api key - id [%s]", id));
 
         return new ResponseEntity<>(apiKeyService.getApiKeyById(id), HttpStatus.OK);
@@ -73,7 +73,7 @@ public class ApiKeyController extends ApiController {
 
     // region - PUT -
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateApiKey(@PathVariable Integer id, @RequestBody ApiKey apiKey) throws Throwable {
+    public ResponseEntity<?> updateApiKey(@PathVariable String id, @RequestBody ApiKey apiKey) throws Throwable {
         log.info(String.format("Updating api key - id [%s]", id));
 
         validationService.validateApiKey(apiKey, id, false);
@@ -84,7 +84,7 @@ public class ApiKeyController extends ApiController {
 
     // region - DELETE -
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> deleteApiKey(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteApiKey(@PathVariable String id) {
         log.info(String.format("Deleting api key - id [%s]", id));
 
         apiKeyService.removeApiKey(id);

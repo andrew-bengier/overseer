@@ -2,7 +2,7 @@ package com.bnfd.overseer.service;
 
 import com.bnfd.overseer.exception.*;
 import com.bnfd.overseer.model.api.*;
-import com.bnfd.overseer.model.persistence.*;
+import com.bnfd.overseer.model.persistence.apikeys.*;
 import com.bnfd.overseer.repository.*;
 import jakarta.persistence.*;
 import lombok.extern.slf4j.*;
@@ -37,10 +37,11 @@ public class ApiKeyService {
     @Transactional
     public ApiKey addApiKey(ApiKey apiKey) {
         ApiKeyEntity entity = overseerMapper.map(apiKey, ApiKeyEntity.class);
+        entity.setId(UUID.randomUUID().toString());
 
         try {
             entity = apiKeyRepository.save(entity);
-        } catch (PersistenceException exception) {
+        } catch (PersistenceException | DataIntegrityViolationException exception) {
             throw new OverseerConflictException(exception.getMessage());
         }
 
@@ -52,11 +53,11 @@ public class ApiKeyService {
     // endregion - CREATE -
 
     // region - READ -
-    public ApiKey getApiKeyById(Integer id) {
+    public ApiKey getApiKeyById(String id) {
         ApiKeyEntity entity = apiKeyRepository.findById(id).orElse(null);
 
         if (ObjectUtils.isEmpty(entity)) {
-            throw new RuntimeException("Not Found");
+            throw new OverseerNotFoundException(String.format("No ApiKey found with id: [%s]", id));
         }
 
         // [TEST]
@@ -101,14 +102,14 @@ public class ApiKeyService {
         ApiKeyEntity entity = apiKeyRepository.findById(apiKey.getId()).orElse(null);
 
         if (ObjectUtils.isEmpty(entity)) {
-            throw new RuntimeException("Not Found");
+            throw new OverseerNotFoundException(String.format("No ApiKey found with id: [%s]", apiKey.getId()));
         }
 
         entity = overseerMapper.map(apiKey, ApiKeyEntity.class);
 
         try {
             entity = apiKeyRepository.save(entity);
-        } catch (PersistenceException exception) {
+        } catch (PersistenceException | DataIntegrityViolationException exception) {
             throw new OverseerConflictException(exception.getMessage());
         }
 
@@ -121,7 +122,7 @@ public class ApiKeyService {
 
     // region - DELETE -
     @Transactional
-    public void removeApiKey(Integer id) {
+    public void removeApiKey(String id) {
         try {
             apiKeyRepository.deleteById(id);
 

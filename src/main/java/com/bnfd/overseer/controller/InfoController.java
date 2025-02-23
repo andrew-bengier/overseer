@@ -1,5 +1,6 @@
 package com.bnfd.overseer.controller;
 
+import com.bnfd.overseer.config.*;
 import com.bnfd.overseer.model.api.info.*;
 import lombok.extern.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
@@ -8,11 +9,13 @@ import org.springframework.core.env.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.*;
+
 @Slf4j
 @RestController
-@RequestMapping("info")
+@RequestMapping("api/info")
 @CrossOrigin(origins = "http://localhost:3000")
-public class InfoController extends ApiController {
+public class InfoController {
 
     // region - Class Variables -
     private final Environment environment;
@@ -31,5 +34,11 @@ public class InfoController extends ApiController {
         log.info("Retrieving api data");
 
         return new ApiData(environment, buildProperties);
+    }
+
+    @GetMapping(path = "/defaultSettings", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getDefaultSettings() {
+        Map<String, String> settings = DefaultSettings.getSettings();
+        return new ResponseEntity<>(settings, HttpStatus.OK);
     }
 }

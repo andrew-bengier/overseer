@@ -4,9 +4,19 @@ spring:
   banner:
     location: classpath:banner.txt
   datasource:
-    url: ${DB_URL}${DB_NAME_LOCATION}
+    url: ${DB_URL}${DB_NAME_LOCATION}${DB_PARAMS}
     username: ${DB_USER}
     password: ${DB_PASS}
     driverClassName: org.h2.Driver
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always

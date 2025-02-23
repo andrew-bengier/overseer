@@ -1,0 +1,73 @@
+-- TEST
+-- CREATE TABLE IF NOT EXISTS libraries
+-- (
+--     id
+--     server_id
+--     name
+--     active
+--     schedule
+--     remove / reapply / reset overlays
+--     schedule overlays
+--
+-- );
+
+-- library settings
+-- asset directory
+-- asset folders
+-- asset depth
+-- create asset folders
+-- prioritize assets
+-- dimensional asset renaming
+-- download url assets
+-- show missing season assets
+-- show missing episode assets
+-- show assets not needed / used
+-- sync mode
+-- default collection order
+-- delete below min
+-- delete not scheduled
+-- delete not maintained
+-- run again
+-- missing only released
+-- show unmanaged
+-- show not configured
+-- show filtered
+-- show options
+-- show missing
+-- only filter missing
+-- save report
+-- report path
+-- tvdb language
+-- ignore ids
+-- ignore imdb ids
+-- item refresh delay
+-- playlist sync to users
+-- playlist exclude users
+-- run order
+-- overlay type / quality
+
+-- tables: library collections, library metadata, library overlays, library operations,
+-- <Directory
+--     allowSync="1"
+--     art="/:/resources/movie-fanart.jpg"
+--     composite="/library/sections/1/composite/1739460828"
+--     filters="1"
+--     refreshing="0"
+--     thumb="/:/resources/movie.png"
+--     key="1"
+--     type="movie"
+--     title="Movies"
+--     agent="tv.plex.agents.movie"
+--     scanner="Plex Movie"
+--     language="en-US"
+--     uuid="2de0bf63-f2cd-4b4c-a110-18b491bf2569"
+--     updatedAt="1689628286"
+--     createdAt="1653404418"
+--     scannedAt="1739460828"
+--     content="1"
+--     directory="1"
+--     contentChangedAt="7813011387357499833"
+--     hidden="0">
+--  <Location id="7" path="M:\" />
+-- </Directory>
+

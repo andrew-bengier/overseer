@@ -2,6 +2,7 @@ package com.bnfd.overseer.controller;
 
 import com.bnfd.overseer.exception.*;
 import com.bnfd.overseer.model.api.*;
+import com.bnfd.overseer.model.constants.*;
 import com.bnfd.overseer.service.*;
 import com.fasterxml.jackson.core.type.*;
 import com.fasterxml.jackson.databind.*;
@@ -23,7 +24,7 @@ import java.util.*;
 @AutoConfigureMockMvc(addFilters = false)
 public class ApiKeyControllerTests {
     // region - Class Variables -
-    private static final String BASE_MAPPING = "/apikeys";
+    private static final String BASE_MAPPING = "/api/apikeys";
 
     @MockitoBean
     private ValidationService validationService;
@@ -56,7 +57,7 @@ public class ApiKeyControllerTests {
             Mockito.doNothing().when(validationService).validateApiKey(Mockito.any(ApiKey.class), Mockito.any(), Mockito.anyBoolean());
             Mockito.doAnswer(invocation -> {
                 ApiKey serviceResult = invocation.getArgument(0);
-                serviceResult.setId(new Random().nextInt());
+                serviceResult.setId(UUID.randomUUID().toString());
                 return serviceResult;
             }).when(apiKeyService).addApiKey(Mockito.any(ApiKey.class));
 
@@ -81,7 +82,7 @@ public class ApiKeyControllerTests {
         public void testAddApiKey_invalidInputs_expectError() throws Throwable {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
-            testKey.setId(new Random().nextInt());
+            testKey.setId(UUID.randomUUID().toString());
             testKey.setName(type.name());
             testKey.setKey("test");
 
@@ -144,7 +145,7 @@ public class ApiKeyControllerTests {
         @Test
         @DisplayName("Acceptable Inputs - Expect OK")
         public void testGetApiKey_acceptableInputs_expectOk() throws Throwable {
-            Integer testId = Math.abs(new Random().nextInt());
+            String testId = UUID.randomUUID().toString();
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
@@ -171,7 +172,7 @@ public class ApiKeyControllerTests {
             Mockito.doThrow(OverseerNotFoundException.class).when(apiKeyService).getApiKeyById(Mockito.any());
 
             String uri = BASE_MAPPING + "/{id}";
-            mockMvc.perform(MockMvcRequestBuilders.get(uri, Math.abs(new Random().nextInt()))
+            mockMvc.perform(MockMvcRequestBuilders.get(uri, UUID.randomUUID().toString())
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(MockMvcResultMatchers.status().isNotFound());
 
@@ -185,7 +186,7 @@ public class ApiKeyControllerTests {
         @Test
         @DisplayName("Acceptable Inputs - Expect OK")
         public void testGetApiKeys_acceptableInputs_expectOk() throws Throwable {
-            Integer testId = Math.abs(new Random().nextInt());
+            String testId = UUID.randomUUID().toString();
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
@@ -228,7 +229,7 @@ public class ApiKeyControllerTests {
         @Test
         @DisplayName("Acceptable Inputs - Expect OK")
         public void testUpdateApiKey_acceptableInputs_expectOk() throws Throwable {
-            Integer testId = Math.abs(new Random().nextInt());
+            String testId = UUID.randomUUID().toString();
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
@@ -256,7 +257,7 @@ public class ApiKeyControllerTests {
         @Test
         @DisplayName("Invalid Inputs - Expect Error")
         public void testAddApiKey_invalidInputs_expectError() throws Throwable {
-            Integer testId = Math.abs(new Random().nextInt());
+            String testId = UUID.randomUUID().toString();
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
@@ -279,7 +280,7 @@ public class ApiKeyControllerTests {
         @Test
         @DisplayName("Missing Inputs - Expect Error")
         public void testAddApiKey_missingInputs_expectError() throws Throwable {
-            Integer testId = Math.abs(new Random().nextInt());
+            String testId = UUID.randomUUID().toString();
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
@@ -301,7 +302,7 @@ public class ApiKeyControllerTests {
         @Test
         @DisplayName("Invalid Duplicate - Expect Error")
         public void testAddApiKey_invalidDuplicate_expectError() throws Throwable {
-            Integer testId = Math.abs(new Random().nextInt());
+            String testId = UUID.randomUUID().toString();
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
@@ -325,7 +326,7 @@ public class ApiKeyControllerTests {
         @Test
         @DisplayName("Not Found - Expect Error")
         public void testAddApiKey_notFound_expectError() throws Throwable {
-            Integer testId = Math.abs(new Random().nextInt());
+            String testId = UUID.randomUUID().toString();
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
@@ -336,7 +337,7 @@ public class ApiKeyControllerTests {
             Mockito.doThrow(OverseerNotFoundException.class).when(apiKeyService).updateApiKey(Mockito.any(ApiKey.class));
 
             String uri = BASE_MAPPING + "/{id}";
-            mockMvc.perform(MockMvcRequestBuilders.put(uri, Math.abs(new Random().nextInt()))
+            mockMvc.perform(MockMvcRequestBuilders.put(uri, UUID.randomUUID().toString())
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(testKey.toString()))
@@ -356,7 +357,7 @@ public class ApiKeyControllerTests {
             Mockito.doNothing().when(apiKeyService).removeApiKey(Mockito.any());
 
             String uri = BASE_MAPPING + "/{id}";
-            mockMvc.perform(MockMvcRequestBuilders.delete(uri, Math.abs(new Random().nextInt()))
+            mockMvc.perform(MockMvcRequestBuilders.delete(uri, UUID.randomUUID().toString())
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(MockMvcResultMatchers.status().isOk());
 
@@ -369,7 +370,7 @@ public class ApiKeyControllerTests {
             Mockito.doThrow(OverseerNotFoundException.class).when(apiKeyService).removeApiKey(Mockito.any());
 
             String uri = BASE_MAPPING + "/{id}";
-            mockMvc.perform(MockMvcRequestBuilders.delete(uri, Math.abs(new Random().nextInt()))
+            mockMvc.perform(MockMvcRequestBuilders.delete(uri, UUID.randomUUID().toString())
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(MockMvcResultMatchers.status().isNotFound());
 
