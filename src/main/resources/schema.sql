@@ -165,13 +165,13 @@ CREATE TABLE IF NOT EXISTS library_actions
 --
 -- MERGE INTO builder_categories (id, name)
 --     KEY (name)
---     VALUES ('01952553-009d-79ec-a426-614b58897837', 'Media')
---          , ('01952553-009d-7b6f-9f6f-a3106ede3e07', 'Label')
---          , ('01952553-009d-7acc-ab3b-40f61d654bfe', 'Filter')
---          , ('01952553-009d-7270-8230-f51b21589054', 'List')
---          , ('01952553-009d-7f39-a7b9-33d9f7dd229a', 'Tracker')
---          , ('01952553-009d-7f13-94b2-437e5a52ec21', 'Data')
---          , ('01952553-009d-7fc4-b76a-0b339acbd7b4', 'Custom');
+--     VALUES ('01952553-009d-79ec-a426-614b58897837', '')
+--          , ('01952553-009d-7b6f-9f6f-a3106ede3e07', '')
+--          , ('01952553-009d-7acc-ab3b-40f61d654bfe', '')
+--          , ('01952553-009d-7270-8230-f51b21589054', '')
+--          , ('01952553-009d-7f39-a7b9-33d9f7dd229a', '')
+--          , ('01952553-009d-7f13-94b2-437e5a52ec21', '')
+--          , ('01952553-009d-7fc4-b76a-0b339acbd7b4', '');
 
 CREATE TABLE IF NOT EXISTS builders
 (
