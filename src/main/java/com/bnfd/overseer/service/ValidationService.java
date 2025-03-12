@@ -1,15 +1,23 @@
 package com.bnfd.overseer.service;
 
-import com.bnfd.overseer.exception.*;
-import com.bnfd.overseer.model.api.*;
-import com.bnfd.overseer.model.constants.*;
-import com.bnfd.overseer.utils.*;
+import com.bnfd.overseer.config.DefaultSettings;
+import com.bnfd.overseer.exception.ErrorCreator;
+import com.bnfd.overseer.exception.OverseerBadRequestException;
+import com.bnfd.overseer.exception.OverseerUnprocessableException;
+import com.bnfd.overseer.model.api.ApiKey;
+import com.bnfd.overseer.model.api.Collection;
+import com.bnfd.overseer.model.api.Library;
+import com.bnfd.overseer.model.api.Server;
+import com.bnfd.overseer.model.constants.SettingLevel;
+import com.bnfd.overseer.utils.ValidationUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.*;
-import org.springframework.util.*;
+import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class ValidationService {
@@ -18,7 +26,6 @@ public class ValidationService {
     private List<String> errors;
     // endregion - Class Variables -
 
-    // TODO: add list of invalid errors
     // region - ApiKey -
     public void validateApiKey(ApiKey apiKey, String id, boolean isNew) throws Throwable {
         errorType = null;
@@ -40,7 +47,7 @@ public class ValidationService {
             }
         }
 
-        if (StringUtils.isBlank(apiKey.getName())) {
+        if (ObjectUtils.isEmpty(apiKey)) {
             errorType = OverseerBadRequestException.class;
             errors.add("Missing api key type");
         }
@@ -68,11 +75,6 @@ public class ValidationService {
             }
         }
 
-        if (ObjectUtils.isEmpty(ApiKeyType.findByName(apiKey.getName()))) {
-            errorType = OverseerUnprocessableException.class;
-            errors.add("Invalid api key type");
-        }
-
         if (ObjectUtils.isNotEmpty(errorType)) {
             throw ErrorCreator.createThrowable(errorType, errors);
         }
@@ -97,17 +99,6 @@ public class ValidationService {
             if (ObjectUtils.isEmpty(server.getId())) {
                 errorType = OverseerBadRequestException.class;
                 errors.add("Missing server id");
-            }
-
-            // required settings
-            if (CollectionUtils.isEmpty(server.getSettings())) {
-                errorType = OverseerBadRequestException.class;
-                errors.add("Missing all server settings");
-            } else {
-                if (!server.getSettings().stream().filter(setting -> setting.getName().equalsIgnoreCase(Constants.ACTIVE_SETTING)).findFirst().isPresent()) {
-                    errorType = OverseerBadRequestException.class;
-                    errors.add("Missing server setting - active");
-                }
             }
         }
 
@@ -145,7 +136,126 @@ public class ValidationService {
     }
     // endregion - Server -
 
-    // region - Settings -
+    // region - Library -
+    public void validateLibrary(Library library, String id, boolean isNew) throws Throwable {
+        errorType = null;
+        errors = new ArrayList<>();
 
-    // endregion - Settings -
+        if (ValidationUtils.isEmpty(library)) {
+            throw ErrorCreator.createThrowable(OverseerBadRequestException.class, List.of("Library is empty or null"));
+        }
+
+        checkLibraryMissingRequiredAttributes(library, isNew);
+        checkLibraryInvalidAttributes(library, id, isNew);
+    }
+
+    protected void checkLibraryMissingRequiredAttributes(Library library, boolean isNew) throws Throwable {
+        if (!isNew) {
+            if (ObjectUtils.isEmpty(library.getId())) {
+                errorType = OverseerBadRequestException.class;
+                errors.add("Missing library id");
+            }
+        }
+
+        if (StringUtils.isBlank(library.getName())) {
+            errorType = OverseerBadRequestException.class;
+            errors.add("Missing library name");
+        }
+
+        if (ObjectUtils.isNotEmpty(errorType)) {
+            throw ErrorCreator.createThrowable(errorType, errors);
+        }
+    }
+
+    protected void checkLibraryInvalidAttributes(Library library, String id, boolean isNew) throws Throwable {
+        if (isNew) {
+            if (ObjectUtils.isNotEmpty(library.getId())) {
+                errorType = OverseerUnprocessableException.class;
+                errors.add("Invalid library non-null id");
+            }
+        } else {
+            if (!library.getId().equalsIgnoreCase(id)) {
+                errorType = OverseerUnprocessableException.class;
+                errors.add("Invalid library non-matching id");
+            }
+        }
+
+        if (ObjectUtils.isNotEmpty(errorType)) {
+            throw ErrorCreator.createThrowable(errorType, errors);
+        }
+    }
+    // endregion - Library -
+
+    // region - Collection -
+    public void validateCollection(Collection collection, String id, boolean isNew) throws Throwable {
+        errorType = null;
+        errors = new ArrayList<>();
+
+        if (ValidationUtils.isEmpty(collection)) {
+            throw ErrorCreator.createThrowable(OverseerBadRequestException.class, List.of("Collection is empty or null"));
+        }
+
+        checkCollectionMissingRequiredAttributes(collection, isNew);
+        checkCollectionInvalidAttributes(collection, id, isNew);
+    }
+
+    protected void checkCollectionMissingRequiredAttributes(Collection collection, boolean isNew) throws Throwable {
+        if (!isNew) {
+            if (ObjectUtils.isEmpty(collection.getId())) {
+                errorType = OverseerBadRequestException.class;
+                errors.add("Missing collection id");
+            }
+        }
+
+        if (StringUtils.isBlank(collection.getName())) {
+            errorType = OverseerBadRequestException.class;
+            errors.add("Missing collection name");
+        }
+
+        if (ObjectUtils.isNotEmpty(errorType)) {
+            throw ErrorCreator.createThrowable(errorType, errors);
+        }
+    }
+
+    protected void checkCollectionInvalidAttributes(Collection collection, String id, boolean isNew) throws Throwable {
+        if (isNew) {
+            if (ObjectUtils.isNotEmpty(collection.getId())) {
+                errorType = OverseerUnprocessableException.class;
+                errors.add("Invalid collection non-null id");
+            }
+        } else {
+            if (!collection.getId().equalsIgnoreCase(id)) {
+                errorType = OverseerUnprocessableException.class;
+                errors.add("Invalid collection non-matching id");
+            }
+        }
+
+        if (ObjectUtils.isNotEmpty(errorType)) {
+            throw ErrorCreator.createThrowable(errorType, errors);
+        }
+    }
+    // endregion - Collection -
+
+    // region - Settings -
+    // region -- Default Settings --
+    public void validateDefaultSettingsUpdateRequest(String level, Set<String> keys) throws Throwable {
+        if (ObjectUtils.isEmpty(SettingLevel.findByName(level))) {
+            errorType = OverseerUnprocessableException.class;
+            errors.add(String.format("Invalid setting level: %s", level));
+        }
+
+        Map<String, String> defaultSettings = DefaultSettings.getSettings().get(SettingLevel.DEFAULT.name().toLowerCase());
+        for (String key : keys) {
+            if (!defaultSettings.containsKey(key)) {
+                errorType = OverseerBadRequestException.class;
+                errors.add(String.format("Invalid default setting: %s", key));
+            }
+        }
+
+        if (ObjectUtils.isNotEmpty(errorType)) {
+            throw ErrorCreator.createThrowable(errorType, errors);
+        }
+    }
+    // endregion -- Default Settings --
+    // endregion - Settings --
 }

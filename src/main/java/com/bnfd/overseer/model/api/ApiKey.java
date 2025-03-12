@@ -1,17 +1,24 @@
 package com.bnfd.overseer.model.api;
 
-import com.google.gson.*;
-import org.apache.commons.lang3.builder.*;
+import com.bnfd.overseer.model.constants.ApiKeyType;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.Comparator;
 
 public class ApiKey implements Serializable, Comparable<ApiKey> {
     // region - Class Variables -
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY, name = "id", example = "01955a48-58fa-75ae-bdb1-5287fc4341dd", description = "ApiKey Id", format = "UUID")
     private String id;
-
-    private String name;
+    @Schema(name = "name", implementation = ApiKeyType.class, description = "ApiKey Type")
+    private ApiKeyType name;
+    @Schema(name = "key", example = "PJ&#8!m}E0a+U*PAPLH.KCe=", description = "API Token")
     private String key;
+    @Schema(name = "url", example = "https://127.0.0.0.1:32400", description = "Api Url")
     private String url;
     // endregion - Class Variables -
 
@@ -19,7 +26,7 @@ public class ApiKey implements Serializable, Comparable<ApiKey> {
     public ApiKey() {
     }
 
-    public ApiKey(String id, String name, String key, String url) {
+    public ApiKey(String id, ApiKeyType name, String key, String url) {
         this.id = id;
         this.name = name;
         this.key = key;
@@ -36,11 +43,11 @@ public class ApiKey implements Serializable, Comparable<ApiKey> {
         this.id = id;
     }
 
-    public String getName() {
+    public ApiKeyType getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(ApiKeyType name) {
         this.name = name;
     }
 

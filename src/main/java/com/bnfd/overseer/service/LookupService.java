@@ -1,17 +1,18 @@
 package com.bnfd.overseer.service;
 
-import com.bnfd.overseer.exception.*;
-import com.bnfd.overseer.model.api.*;
-import com.bnfd.overseer.model.constants.*;
-import com.bnfd.overseer.model.persistence.libraries.*;
-import com.bnfd.overseer.repository.*;
-import lombok.extern.slf4j.*;
-import org.modelmapper.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.stereotype.*;
-import org.springframework.util.*;
+import com.bnfd.overseer.exception.OverseerNoContentException;
+import com.bnfd.overseer.model.api.Builder;
+import com.bnfd.overseer.model.persistence.BuilderEntity;
+import com.bnfd.overseer.repository.BuilderRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -19,33 +20,27 @@ public class LookupService {
     // region - Class Variables -
     private final ModelMapper overseerMapper;
 
-    private final LibraryActionRepository libraryActionRepository;
+    private final BuilderRepository builderRepository;
     // endregion - Class Variables -
 
     // region - Constructors -
     @Autowired
-    public LookupService(@Qualifier("overseer-mapper") ModelMapper overseerMapper, LibraryActionRepository libraryActionRepository) {
+    public LookupService(@Qualifier("overseer-mapper") ModelMapper overseerMapper, BuilderRepository builderRepository) {
         this.overseerMapper = overseerMapper;
-        this.libraryActionRepository = libraryActionRepository;
+        this.builderRepository = builderRepository;
     }
     // endregion - Constructors -
 
-    public List<Action> getActionsByCategory(String category) {
-        switch (ActionCategory.valueOf(category.toUpperCase())) {
-            case ActionCategory.LIBRARY:
-                List<LibraryActionEntity> entities = libraryActionRepository.findAll();
+    // region - READ -
+    public List<Builder> getAllBuilders() {
+        List<BuilderEntity> entities = builderRepository.findAll();
 
-                if (CollectionUtils.isEmpty(entities)) {
-                    throw new OverseerNoContentException("No action found matching provided search params");
-                }
-
-                // [TEST]
-                log.debug("Actions: ", entities.size());
-
-                return overseerMapper.map(entities, new TypeToken<List<Action>>() {
-                }.getType());
-            default:
-                throw new OverseerPreConditionRequiredException("Error - action category not currently supported");
+        if (CollectionUtils.isEmpty(entities)) {
+            throw new OverseerNoContentException("No builders found");
         }
+
+        return overseerMapper.map(entities, new TypeToken<List<Builder>>() {
+        }.getType());
     }
+    // endregion - READ -
 }

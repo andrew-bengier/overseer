@@ -5,5 +5,17 @@ public enum SettingType {
     BOOLEAN,
     NUMBER,
     DATE,
-    CRON
+    CRON;
+
+    public static SettingType findByName(String name) {
+        SettingType result = null;
+        for (SettingType type : values()) {
+            if (type.name().equalsIgnoreCase(name)) {
+                result = type;
+                break;
+            }
+        }
+
+        return result;
+    }
 }

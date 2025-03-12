@@ -1,18 +1,20 @@
 package com.bnfd.overseer.model.mapper;
 
 import com.bnfd.overseer.model.api.*;
-import com.bnfd.overseer.model.constants.*;
-import com.bnfd.overseer.model.media.plex.*;
-import com.bnfd.overseer.model.persistence.apikeys.*;
-import com.bnfd.overseer.model.persistence.libraries.*;
-import com.bnfd.overseer.model.persistence.servers.*;
-import org.modelmapper.*;
-import org.modelmapper.spi.*;
-import org.springframework.context.annotation.*;
-import org.springframework.util.*;
+import com.bnfd.overseer.model.media.plex.Directory;
+import com.bnfd.overseer.model.persistence.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.modelmapper.Converter;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.spi.MappingContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ObjectUtils;
 
-import java.util.*;
-import java.util.stream.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 @Configuration
 public class OverseerMapper extends ModelMapper {
@@ -27,15 +29,13 @@ public class OverseerMapper extends ModelMapper {
         // endregion - ApiKey -
 
         // region - Setting -
-        mapper.addConverter(serverSettingModelToEntity());
-        mapper.addConverter(serverSettingEntityToModel());
-        mapper.addConverter(librarySettingModelToEntity());
-        mapper.addConverter(librarySettingEntityToModel());
+        mapper.addConverter(settingModelToEntity());
+        mapper.addConverter(settingEntityToModel());
         // endregion - Setting -
 
         // region - Action -
-        mapper.addConverter(libraryActionModelToEntity());
-        mapper.addConverter(libraryActionEntityToModel());
+        mapper.addConverter(actionModelToEntity());
+        mapper.addConverter(actionEntityToModel());
         // endregion - Action -
 
         // region - Server -
@@ -47,6 +47,11 @@ public class OverseerMapper extends ModelMapper {
         mapper.addConverter(libraryModelToEntity());
         mapper.addConverter(libraryEntityToModel());
         // endregion - Library -
+
+        // region - Collection -
+        mapper.addConverter(collectionModelToEntity());
+        mapper.addConverter(collectionEntityToModel());
+        // endregion - Collection -
 
         // region - Plex API -
         mapper.addConverter(plexDirectoryToLibraryEntity());
@@ -102,20 +107,19 @@ public class OverseerMapper extends ModelMapper {
     // endregion -- ApiKey --
 
     // region -- Setting --
-    // region --- Server ---
-    private Converter<Setting, ServerSettingEntity> serverSettingModelToEntity() {
-        return new Converter<Setting, ServerSettingEntity>() {
+    private Converter<Setting, SettingEntity> settingModelToEntity() {
+        return new Converter<Setting, SettingEntity>() {
             @Override
-            public ServerSettingEntity convert(MappingContext<Setting, ServerSettingEntity> mappingContext) {
-                ServerSettingEntity entity;
+            public SettingEntity convert(MappingContext<Setting, SettingEntity> mappingContext) {
+                SettingEntity entity;
                 if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
-                    entity = new ServerSettingEntity();
+                    entity = new SettingEntity();
                 } else {
                     entity = mappingContext.getDestination();
                 }
 
                 entity.setId(mappingContext.getSource().getId());
-                entity.setType(mappingContext.getSource().getType().name());
+                entity.setType(mappingContext.getSource().getType());
                 entity.setName(mappingContext.getSource().getName());
                 entity.setVal(mappingContext.getSource().getVal());
 
@@ -124,10 +128,10 @@ public class OverseerMapper extends ModelMapper {
         };
     }
 
-    private Converter<ServerSettingEntity, Setting> serverSettingEntityToModel() {
-        return new Converter<ServerSettingEntity, Setting>() {
+    private Converter<SettingEntity, Setting> settingEntityToModel() {
+        return new Converter<SettingEntity, Setting>() {
             @Override
-            public Setting convert(MappingContext<ServerSettingEntity, Setting> mappingContext) {
+            public Setting convert(MappingContext<SettingEntity, Setting> mappingContext) {
                 Setting model;
                 if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
                     model = new Setting();
@@ -136,7 +140,7 @@ public class OverseerMapper extends ModelMapper {
                 }
 
                 model.setId(mappingContext.getSource().getId());
-                model.setType(SettingType.valueOf(mappingContext.getSource().getType().toUpperCase()));
+                model.setType(mappingContext.getSource().getType());
                 model.setName(mappingContext.getSource().getName());
                 model.setVal(mappingContext.getSource().getVal());
 
@@ -144,68 +148,22 @@ public class OverseerMapper extends ModelMapper {
             }
         };
     }
-    // endregion --- Server ---
-
-    // region --- Library ---
-    private Converter<Setting, LibrarySettingEntity> librarySettingModelToEntity() {
-        return new Converter<Setting, LibrarySettingEntity>() {
-            @Override
-            public LibrarySettingEntity convert(MappingContext<Setting, LibrarySettingEntity> mappingContext) {
-                LibrarySettingEntity entity;
-                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
-                    entity = new LibrarySettingEntity();
-                } else {
-                    entity = mappingContext.getDestination();
-                }
-
-                entity.setId(mappingContext.getSource().getId());
-                entity.setType(mappingContext.getSource().getType().name());
-                entity.setName(mappingContext.getSource().getName());
-                entity.setVal(mappingContext.getSource().getVal());
-
-                return entity;
-            }
-        };
-    }
-
-    private Converter<LibrarySettingEntity, Setting> librarySettingEntityToModel() {
-        return new Converter<LibrarySettingEntity, Setting>() {
-            @Override
-            public Setting convert(MappingContext<LibrarySettingEntity, Setting> mappingContext) {
-                Setting model;
-                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
-                    model = new Setting();
-                } else {
-                    model = mappingContext.getDestination();
-                }
-
-                model.setId(mappingContext.getSource().getId());
-                model.setType(SettingType.valueOf(mappingContext.getSource().getType().toUpperCase()));
-                model.setName(mappingContext.getSource().getName());
-                model.setVal(mappingContext.getSource().getVal());
-
-                return model;
-            }
-        };
-    }
-    // endregion --- Library ---
     // endregion -- Setting --
 
     // region -- Action --
-    // region --- Library ---
-    private Converter<Action, LibraryActionEntity> libraryActionModelToEntity() {
-        return new Converter<Action, LibraryActionEntity>() {
+    private Converter<Action, ActionEntity> actionModelToEntity() {
+        return new Converter<Action, ActionEntity>() {
             @Override
-            public LibraryActionEntity convert(MappingContext<Action, LibraryActionEntity> mappingContext) {
-                LibraryActionEntity entity;
+            public ActionEntity convert(MappingContext<Action, ActionEntity> mappingContext) {
+                ActionEntity entity;
                 if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
-                    entity = new LibraryActionEntity();
+                    entity = new ActionEntity();
                 } else {
                     entity = mappingContext.getDestination();
                 }
 
                 entity.setId(mappingContext.getSource().getId());
-                entity.setType(mappingContext.getSource().getType().name());
+                entity.setType(mappingContext.getSource().getType());
                 entity.setName(mappingContext.getSource().getName());
                 entity.setVal(mappingContext.getSource().getVal());
 
@@ -214,10 +172,10 @@ public class OverseerMapper extends ModelMapper {
         };
     }
 
-    private Converter<LibraryActionEntity, Action> libraryActionEntityToModel() {
-        return new Converter<LibraryActionEntity, Action>() {
+    private Converter<ActionEntity, Action> actionEntityToModel() {
+        return new Converter<ActionEntity, Action>() {
             @Override
-            public Action convert(MappingContext<LibraryActionEntity, Action> mappingContext) {
+            public Action convert(MappingContext<ActionEntity, Action> mappingContext) {
                 Action model;
                 if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
                     model = new Action();
@@ -226,7 +184,7 @@ public class OverseerMapper extends ModelMapper {
                 }
 
                 model.setId(mappingContext.getSource().getId());
-                model.setType(ActionType.valueOf(mappingContext.getSource().getType().toUpperCase()));
+                model.setType(mappingContext.getSource().getType());
                 model.setName(mappingContext.getSource().getName());
                 model.setVal(mappingContext.getSource().getVal());
 
@@ -234,7 +192,6 @@ public class OverseerMapper extends ModelMapper {
             }
         };
     }
-    // endregion --- Library ---
     // endregion -- Action --
 
     // region -- Server --
@@ -251,14 +208,27 @@ public class OverseerMapper extends ModelMapper {
 
                 entity.setId(mappingContext.getSource().getId());
                 entity.setName(mappingContext.getSource().getName());
+
                 if (!ObjectUtils.isEmpty(mappingContext.getSource().getApiKey())) {
                     entity.setApiKey(map(mappingContext.getSource().getApiKey(), ApiKeyEntity.class));
                 }
+
                 if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
-                    entity.setSettings(mappingContext.getSource().getSettings().stream().map(setting -> map(setting, ServerSettingEntity.class)).collect(Collectors.toSet()));
+                    Set<SettingEntity> settings = mappingContext.getSource().getSettings().stream().map(setting -> map(setting, SettingEntity.class)).collect(Collectors.toSet());
+                    settings.forEach(setting -> setting.setReferenceId(entity.getId()));
+                    entity.setSettings(settings);
                 }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                    Set<ActionEntity> actions = mappingContext.getSource().getActions().stream().map(action -> map(action, ActionEntity.class)).collect(Collectors.toSet());
+                    actions.forEach(action -> action.setReferenceId(entity.getId()));
+                    entity.setActions(actions);
+                }
+
                 if (!CollectionUtils.isEmpty(mappingContext.getSource().getLibraries())) {
-                    entity.setLibraries(mappingContext.getSource().getLibraries().stream().map(library -> map(library, LibraryEntity.class)).collect(Collectors.toSet()));
+                    Set<LibraryEntity> libraries = mappingContext.getSource().getLibraries().stream().map(library -> map(library, LibraryEntity.class)).collect(Collectors.toSet());
+                    libraries.forEach(library -> library.setServerId(entity.getId()));
+                    entity.setLibraries(libraries);
                 }
 
                 return entity;
@@ -279,12 +249,19 @@ public class OverseerMapper extends ModelMapper {
 
                 model.setId(mappingContext.getSource().getId());
                 model.setName(mappingContext.getSource().getName());
+
                 if (!ObjectUtils.isEmpty(mappingContext.getSource().getApiKey())) {
                     model.setApiKey(map(mappingContext.getSource().getApiKey(), ApiKey.class));
                 }
+
                 if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
                     model.setSettings(mappingContext.getSource().getSettings().stream().map(setting -> map(setting, Setting.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                    model.setActions(mappingContext.getSource().getActions().stream().map(action -> map(action, Action.class)).collect(Collectors.toCollection(TreeSet::new)));
+                }
+
                 if (!CollectionUtils.isEmpty(mappingContext.getSource().getLibraries())) {
                     model.setLibraries(mappingContext.getSource().getLibraries().stream().map(library -> map(library, Library.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
@@ -308,11 +285,27 @@ public class OverseerMapper extends ModelMapper {
                 }
 
                 entity.setId(mappingContext.getSource().getId());
-                entity.setReferenceId(mappingContext.getSource().getReferenceId());
+                entity.setServerId(mappingContext.getSource().getServerId());
+                entity.setExternalId(mappingContext.getSource().getReferenceId());
                 entity.setType(mappingContext.getSource().getType());
                 entity.setName(mappingContext.getSource().getName());
+
                 if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
-                    entity.setSettings(mappingContext.getSource().getSettings().stream().map(setting -> map(setting, LibrarySettingEntity.class)).collect(Collectors.toSet()));
+                    Set<SettingEntity> settings = mappingContext.getSource().getSettings().stream().map(setting -> map(setting, SettingEntity.class)).collect(Collectors.toSet());
+                    settings.forEach(setting -> setting.setReferenceId(entity.getId()));
+                    entity.setSettings(settings);
+                }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                    Set<ActionEntity> actions = mappingContext.getSource().getActions().stream().map(action -> map(action, ActionEntity.class)).collect(Collectors.toSet());
+                    actions.forEach(action -> action.setReferenceId(entity.getId()));
+                    entity.setActions(actions);
+                }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getCollections())) {
+                    Set<CollectionEntity> collections = mappingContext.getSource().getCollections().stream().map(collection -> map(collection, CollectionEntity.class)).collect(Collectors.toSet());
+                    collections.forEach(collection -> collection.setLibraryId(entity.getId()));
+                    entity.setCollections(collections);
                 }
 
                 return entity;
@@ -332,11 +325,21 @@ public class OverseerMapper extends ModelMapper {
                 }
 
                 model.setId(mappingContext.getSource().getId());
-                model.setReferenceId(mappingContext.getSource().getReferenceId());
+                model.setServerId(mappingContext.getSource().getServerId());
+                model.setReferenceId(mappingContext.getSource().getExternalId());
                 model.setType(mappingContext.getSource().getType());
                 model.setName(mappingContext.getSource().getName());
+
                 if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
-                    model.setSettings(mappingContext.getSource().getSettings().stream().map(setting -> map(setting, Setting.class)).collect(Collectors.toSet()));
+                    model.setSettings(mappingContext.getSource().getSettings().stream().map(setting -> map(setting, Setting.class)).collect(Collectors.toCollection(TreeSet::new)));
+                }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                    model.setActions(mappingContext.getSource().getActions().stream().map(action -> map(action, Action.class)).collect(Collectors.toCollection(TreeSet::new)));
+                }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getCollections())) {
+                    model.setCollections(mappingContext.getSource().getCollections().stream().map(collection -> map(collection, Collection.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
                 return model;
@@ -344,6 +347,107 @@ public class OverseerMapper extends ModelMapper {
         };
     }
     // endregion -- Library --
+
+    // region - Collection -
+    public Converter<Collection, CollectionEntity> collectionModelToEntity() {
+        return new Converter<Collection, CollectionEntity>() {
+            @Override
+            public CollectionEntity convert(MappingContext<Collection, CollectionEntity> mappingContext) {
+                CollectionEntity entity;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    entity = new CollectionEntity();
+                } else {
+                    entity = mappingContext.getDestination();
+                }
+
+                entity.setId(mappingContext.getSource().getId());
+                entity.setLibraryId(mappingContext.getSource().getLibraryId());
+                entity.setExternalId(mappingContext.getSource().getReferenceId());
+                entity.setName(mappingContext.getSource().getName());
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getBuilders())) {
+                    Set<CollectionBuilderEntity> collectionBuilderEntities = new HashSet<>();
+
+                    mappingContext.getSource().getBuilders().forEach(builder -> {
+                        collectionBuilderEntities.add(
+                                new CollectionBuilderEntity(
+                                        builder.getReferenceId(),
+                                        entity,
+                                        new BuilderEntity(builder.getId(), builder.getType(), builder.getCategory(), builder.getName(), builder.getVersion()),
+                                        builder.getAttributes()
+                                )
+                        );
+                    });
+
+                    entity.setBuilders(collectionBuilderEntities);
+                }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
+                    Set<SettingEntity> settings = mappingContext.getSource().getSettings().stream().map(setting -> map(setting, SettingEntity.class)).collect(Collectors.toSet());
+                    settings.forEach(setting -> setting.setReferenceId(entity.getId()));
+                    entity.setSettings(settings);
+                }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                    Set<ActionEntity> actions = mappingContext.getSource().getActions().stream().map(action -> map(action, ActionEntity.class)).collect(Collectors.toSet());
+                    actions.forEach(action -> action.setReferenceId(entity.getId()));
+                    entity.setActions(actions);
+                }
+
+                return entity;
+            }
+        };
+    }
+
+    public Converter<CollectionEntity, Collection> collectionEntityToModel() {
+        return new Converter<CollectionEntity, Collection>() {
+            @Override
+            public Collection convert(MappingContext<CollectionEntity, Collection> mappingContext) {
+                Collection model;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    model = new Collection();
+                } else {
+                    model = mappingContext.getDestination();
+                }
+
+                model.setId(mappingContext.getSource().getId());
+                model.setLibraryId(mappingContext.getSource().getLibraryId());
+                model.setReferenceId(mappingContext.getSource().getExternalId());
+                model.setName(mappingContext.getSource().getName());
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getBuilders())) {
+                    Set<Builder> builders = new HashSet<>();
+
+                    mappingContext.getSource().getBuilders().forEach(builder -> {
+                        builders.add(
+                                new Builder(
+                                        builder.getBuilder().getId(),
+                                        builder.getId(),
+                                        builder.getBuilder().getType(),
+                                        builder.getBuilder().getCategory(),
+                                        builder.getBuilder().getName(),
+                                        builder.getBuilder().getVersion(),
+                                        builder.getBuilderAttributes()
+                                )
+                        );
+                    });
+
+                    model.setBuilders(builders);
+                }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
+                    model.setSettings(mappingContext.getSource().getSettings().stream().map(setting -> map(setting, Setting.class)).collect(Collectors.toCollection(TreeSet::new)));
+                }
+
+                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                    model.setActions(mappingContext.getSource().getActions().stream().map(action -> map(action, Action.class)).collect(Collectors.toCollection(TreeSet::new)));
+                }
+
+                return model;
+            }
+        };
+    }
+    // endregion - Collection -
 
     // region - Plex API -
     // Directory - Library
@@ -358,7 +462,7 @@ public class OverseerMapper extends ModelMapper {
                     entity = mappingContext.getDestination();
                 }
 
-                entity.setReferenceId(mappingContext.getSource().getKey());
+                entity.setExternalId(mappingContext.getSource().getKey());
                 entity.setType(mappingContext.getSource().getType());
                 entity.setName(mappingContext.getSource().getTitle());
 

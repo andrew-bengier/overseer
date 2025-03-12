@@ -2,7 +2,8 @@
 <configuration scan="false">
     <springProfile name="local">
         <property name="app.name" value="OverseerApi"/>
-        <property name="log.pattern" value="%d{yyyy-MM-dd'T'HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} [${app.name}][%X{endpointPath}][%X{userId}] %m%n"/>
+        <property name="log.pattern"
+                  value="%d{yyyy-MM-dd'T'HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} [${app.name}][%X{endpointPath}] %m%n"/>
 
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
@@ -12,10 +13,8 @@
         </appender>
 
         <!--        <logger name="org.hibernate" level="DEBUG"/>-->
-        <!--        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>-->
         <logger name="org.springframework" level="INFO"/>
-        <!--        <logger name="org.springframework.jdbc.core.JdbcTemplate" level="DEBUG"/>-->
-        <!--        <logger name="org.springframework.jdbc.core.StatementCreatorUtils" level="TRACE"/>-->
+        <logger name="org.springframework.jdbc" level="DEBUG"/>
         <logger name="com.bnfd.common" level="INFO"/>
         <logger name="com.bnfd.overseer" level="DEBUG"/>
         <logger name="com.bnfd.overseer.service" level="DEBUG"/>
@@ -26,7 +25,8 @@
     </springProfile>
     <springProfile name="!local">
         <property name="app.name" value="OverseerApi"/>
-        <property name="log.pattern" value="%d{yyyy-MM-dd'T'HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} [${app.name}][%X{endpointPath}][%X{userId}] %m%n"/>
+        <property name="log.pattern"
+                  value="%d{yyyy-MM-dd'T'HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} [${app.name}][%X{endpointPath}][%X{userId}] %m%n"/>
 
         <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>

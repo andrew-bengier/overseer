@@ -1,21 +1,29 @@
 package com.bnfd.overseer.model.api;
 
-import com.google.gson.*;
-import org.apache.commons.lang3.builder.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Server implements Serializable, Comparable<Server> {
     // region - Class Variables -
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY, name = "id", example = "01955a48-58fa-75ae-bdb1-5287fc4341dd", description = "Server Id", format = "UUID")
     private String id;
-
+    @Schema(name = "name", example = "Plex - NAS", description = "Server Name")
     private String name;
-
+    @Schema(name = "apiKey", implementation = ApiKey.class, description = "ApiKey")
     private ApiKey apiKey;
-
+    @Schema(name = "settings", implementation = Setting.class, description = "Server Settings")
     private Set<Setting> settings;
-
+    @Schema(name = "actions", implementation = Action.class, description = "Server Actions")
+    private Set<Action> actions;
+    @Schema(name = "libraries", implementation = Library.class, description = "Server Libraries")
     private Set<Library> libraries;
     // endregion - Class Variables -
 
@@ -70,6 +78,30 @@ public class Server implements Serializable, Comparable<Server> {
     public void removeSetting(Setting setting) {
         if (!settings.isEmpty()) {
             settings.remove(setting);
+        }
+    }
+
+    public Set<Action> getActions() {
+        return actions;
+    }
+
+    public void setActions(Set<Action> actions) {
+        this.actions = actions;
+    }
+
+    public Set<Action> addAction(Action action) {
+        if (actions.isEmpty()) {
+            actions = new HashSet<>();
+        }
+
+        actions.add(action);
+
+        return actions;
+    }
+
+    public void removeAction(Action action) {
+        if (!actions.isEmpty()) {
+            actions.remove(action);
         }
     }
 

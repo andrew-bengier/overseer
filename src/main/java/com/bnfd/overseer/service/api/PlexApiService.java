@@ -1,20 +1,30 @@
 package com.bnfd.overseer.service.api;
 
-import com.bnfd.overseer.model.media.plex.*;
-import com.bnfd.overseer.model.persistence.libraries.*;
-import com.bnfd.overseer.model.persistence.servers.*;
-import jakarta.xml.bind.*;
-import lombok.extern.slf4j.*;
-import org.modelmapper.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.http.*;
-import org.springframework.stereotype.*;
+import com.bnfd.overseer.model.media.plex.MediaContainer;
+import com.bnfd.overseer.model.persistence.LibraryEntity;
+import com.bnfd.overseer.model.persistence.ServerEntity;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.Scanner;
 
-import static com.bnfd.overseer.utils.Constants.*;
+import static com.bnfd.overseer.utils.Constants.PLEX_LIBRARIES_URL;
+import static com.bnfd.overseer.utils.Constants.PLEX_TOKEN_PARAM;
 
 @Slf4j
 @Service

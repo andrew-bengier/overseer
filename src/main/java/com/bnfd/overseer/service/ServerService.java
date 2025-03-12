@@ -1,23 +1,39 @@
 package com.bnfd.overseer.service;
 
-import com.bnfd.overseer.config.*;
-import com.bnfd.overseer.exception.*;
-import com.bnfd.overseer.model.api.*;
-import com.bnfd.overseer.model.constants.*;
-import com.bnfd.overseer.model.persistence.servers.*;
-import com.bnfd.overseer.repository.*;
-import com.bnfd.overseer.utils.*;
-import jakarta.persistence.*;
-import lombok.extern.slf4j.*;
+import com.bnfd.overseer.exception.OverseerConflictException;
+import com.bnfd.overseer.exception.OverseerNoContentException;
+import com.bnfd.overseer.exception.OverseerNotFoundException;
+import com.bnfd.overseer.model.api.Action;
+import com.bnfd.overseer.model.api.Library;
+import com.bnfd.overseer.model.api.Server;
+import com.bnfd.overseer.model.api.Setting;
+import com.bnfd.overseer.model.constants.SettingLevel;
+import com.bnfd.overseer.model.constants.SettingType;
+import com.bnfd.overseer.model.persistence.ActionEntity;
+import com.bnfd.overseer.model.persistence.ServerEntity;
+import com.bnfd.overseer.model.persistence.SettingEntity;
+import com.bnfd.overseer.repository.ActionRepository;
+import com.bnfd.overseer.repository.ServerRepository;
+import com.bnfd.overseer.repository.SettingRepository;
+import com.bnfd.overseer.utils.ActionUtils;
+import com.bnfd.overseer.utils.Constants;
+import com.bnfd.overseer.utils.SettingUtils;
+import jakarta.persistence.PersistenceException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.modelmapper.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.dao.*;
-import org.springframework.stereotype.*;
-import org.springframework.transaction.annotation.*;
-import org.springframework.util.*;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -25,85 +41,95 @@ public class ServerService {
     // region - Class Variables -
     private final ModelMapper overseerMapper;
 
-    private final LibraryService libraryService;
-
     private final ServerRepository serverRepository;
 
-    private final ServerSettingRepository serverSettingRepository;
+    private final SettingRepository settingRepository;
+
+    private final ActionRepository actionRepository;
+
+    private final LibraryService libraryService;
     // endregion - Class Variables -
 
     // region - Constructors -
     @Autowired
     public ServerService(@Qualifier("overseer-mapper") ModelMapper overseerMapper,
-                         LibraryService libraryService,
                          ServerRepository serverRepository,
-                         ServerSettingRepository serverSettingRepository
+                         SettingRepository settingRepository,
+                         ActionRepository actionRepository,
+                         LibraryService libraryService
     ) {
         this.overseerMapper = overseerMapper;
-        this.libraryService = libraryService;
         this.serverRepository = serverRepository;
-        this.serverSettingRepository = serverSettingRepository;
+        this.settingRepository = settingRepository;
+        this.actionRepository = actionRepository;
+        this.libraryService = libraryService;
     }
     // endregion - Constructors -
 
+    // TODO: process server
+//    @Transactional
+//    public Server processServerById(String id, boolean addLibraries) {
+//        ServerEntity entity = serverRepository.findById(id).orElse(null);
+//
+//        if (ObjectUtils.isEmpty(entity)) {
+//            throw new OverseerNotFoundException(String.format("No Server found with id: [%s]", id));
+//        }
+//
+//        Set<ServerSettingEntity> serverSettings = serverSettingRepository.findAllByServerId(entity.getId());
+//        serverSettings.forEach(serverSetting -> {
+//            serverSetting.setServer(entity.thinCopy());
+//        });
+//        entity.setSettings(serverSettings);
+//
+//        List<Library> libraries;
+//        if (addLibraries) {
+//            libraries = libraryService.addLibraries(entity);
+//        } else {
+//            libraries = libraryService.getLibrariesByServerId(id, false);
+//
+//            // TODO: call to process each library in server
+//        }
+//
+//        Server server = overseerMapper.map(entity, Server.class);
+//        server.setLibraries(new HashSet<>(libraries));
+//
+//        return server;
+//    }
+
     // region - CREATE -
     @Transactional
-    public Server addServer(Server server, boolean process) {
+    public Server addServer(Server server, boolean includeLibraries) {
         ServerEntity entity = overseerMapper.map(server, ServerEntity.class);
         entity.setId(UUID.randomUUID().toString());
-        entity = configureNewServer(entity);
 
         try {
             entity = serverRepository.save(entity);
+
+            Set<SettingEntity> settingEntities = configureNewServerSettings(entity);
+            settingEntities = new HashSet<>(settingRepository.saveAll(settingEntities));
+            entity.setSettings(settingEntities);
         } catch (PersistenceException exception) {
             throw new OverseerConflictException(exception.getMessage());
         }
 
-        // [TEST]
-        log.debug("Server added");
+        server = overseerMapper.map(entity, Server.class);
 
-        if (process) {
-            processServerById(entity.getId(), true);
+        if (includeLibraries) {
+            List<Library> libraries = libraryService.addLibraries(entity);
+            server.setLibraries(new HashSet<>(libraries));
         }
-
-        return overseerMapper.map(entity, Server.class);
-    }
-
-    @Transactional
-    public Server processServerById(String id, boolean addLibraries) {
-        ServerEntity entity = serverRepository.findById(id).orElse(null);
-
-        if (ObjectUtils.isEmpty(entity)) {
-            throw new OverseerNotFoundException(String.format("No Server found with id: [%s]", id));
-        }
-
-        List<Library> libraries;
-        if (addLibraries) {
-            libraries = libraryService.addLibraries(entity);
-        } else {
-            libraries = libraryService.getLibrariesByServerId(id);
-
-            // TODO: call to process each library in server
-        }
-
-        Server server = overseerMapper.map(entity, Server.class);
-        server.setLibraries(new HashSet<>(libraries));
 
         return server;
     }
     // endregion - CREATE -
 
     // region - READ -
-    // TODO: add getters for libraries here
     public Server getServerById(String id) {
         ServerEntity entity = serverRepository.findById(id).orElse(null);
 
         if (ObjectUtils.isEmpty(entity)) {
             throw new OverseerNotFoundException(String.format("No Server found with id: [%s]", id));
         }
-
-        // [TEST]
-        log.debug("Server: ", entity);
 
         return overseerMapper.map(entity, Server.class);
     }
@@ -114,9 +140,6 @@ public class ServerService {
         if (CollectionUtils.isEmpty(entities)) {
             throw new OverseerNoContentException("No servers found");
         }
-
-        // [TEST]
-        log.debug("Servers: ", entities.size());
 
         return overseerMapper.map(entities, new TypeToken<List<Server>>() {
         }.getType());
@@ -132,61 +155,105 @@ public class ServerService {
             throw new OverseerNotFoundException(String.format("No Server found with id: [%s]", server.getId()));
         }
 
-        entity = overseerMapper.map(server, ServerEntity.class);
-
         try {
+            entity.setName(server.getName());
             entity = serverRepository.save(entity);
-            entity.setSettings(updateSettings(entity, entity.getSettings()));
         } catch (PersistenceException exception) {
             throw new OverseerConflictException(exception.getMessage());
         }
-
-        // [TEST]
-        log.debug("Server updated");
 
         return overseerMapper.map(entity, Server.class);
     }
 
     @Transactional
     public Server updateServerSettings(String serverId, Set<Setting> serverSettings) {
-        ServerEntity entity = serverRepository.findById(serverId).orElse(null);
+        ServerEntity server = serverRepository.findById(serverId).orElse(null);
 
-        if (ObjectUtils.isEmpty(entity)) {
+        if (ObjectUtils.isEmpty(server)) {
             throw new OverseerNotFoundException(String.format("No Server found with id: [%s]", serverId));
         }
 
-        entity.setSettings(updateSettings(entity, overseerMapper.map(serverSettings, new TypeToken<Set<ServerSettingEntity>>() {
-        }.getType())));
+        Set<SettingEntity> requested = overseerMapper.map(serverSettings, new TypeToken<Set<SettingEntity>>() {
+        }.getType());
 
-        // [TEST]
-        log.debug("Server settings updated");
+        Set<SettingEntity> toSave = SettingUtils.syncSettings(serverId, server.getSettings(), requested, false);
 
-        return overseerMapper.map(entity, Server.class);
+        try {
+            Set<SettingEntity> entities = new HashSet<>(settingRepository.saveAll(toSave));
+            server.setSettings(entities);
+        } catch (PersistenceException exception) {
+            throw new OverseerConflictException(exception.getMessage());
+        }
+
+        return overseerMapper.map(server, Server.class);
     }
 
     @Transactional
-    public void updateServerActive(String serverId, boolean active) {
+    public Server updateServerActiveSetting(String serverId, boolean active) {
+        ServerEntity server = serverRepository.findById(serverId).orElse(null);
+
+        if (ObjectUtils.isEmpty(server)) {
+            throw new OverseerNotFoundException(String.format("No Server found with id: [%s]", serverId));
+        }
+
+        SettingEntity activeSetting = server.getSettings().stream().filter(setting -> setting.getName().equalsIgnoreCase(Constants.ACTIVE_SETTING)).findFirst().orElse(null);
+        if (ObjectUtils.isEmpty(activeSetting)) {
+            // new setting
+            activeSetting = new SettingEntity();
+            activeSetting.setId(UUID.randomUUID().toString());
+            activeSetting.setReferenceId(serverId);
+            activeSetting.setName(Constants.ACTIVE_SETTING);
+            activeSetting.setVal(String.valueOf(active));
+            activeSetting.setType(SettingType.BOOLEAN);
+        } else {
+            activeSetting.setVal(String.valueOf(active));
+        }
+
+        try {
+            settingRepository.save(activeSetting);
+            server = serverRepository.findById(serverId).orElse(null);
+        } catch (PersistenceException exception) {
+            throw new OverseerConflictException(exception.getMessage());
+        }
+
+        return overseerMapper.map(server, Server.class);
+    }
+
+    @Transactional
+    public Server updateServerActions(String serverId, Set<Action> serverActions) {
+        ServerEntity server = serverRepository.findById(serverId).orElse(null);
+
+        if (ObjectUtils.isEmpty(server)) {
+            throw new OverseerNotFoundException(String.format("No Server found with id: [%s]", serverId));
+        }
+
+        Set<ActionEntity> requested = overseerMapper.map(serverActions, new TypeToken<Set<ActionEntity>>() {
+        }.getType());
+
+        Set<ActionEntity> toSave = ActionUtils.syncActions(serverId, server.getActions(), requested, false);
+
+        try {
+            Set<ActionEntity> entities = new HashSet<>(actionRepository.saveAll(toSave));
+            server.setActions(entities);
+        } catch (PersistenceException exception) {
+            throw new OverseerConflictException(exception.getMessage());
+        }
+
+        return overseerMapper.map(server, Server.class);
+    }
+
+    @Transactional
+    public Server resyncServer(String serverId) {
         ServerEntity entity = serverRepository.findById(serverId).orElse(null);
 
         if (ObjectUtils.isEmpty(entity)) {
             throw new OverseerNotFoundException(String.format("No Server found with id: [%s]", serverId));
         }
 
-        ServerSettingEntity activeSetting = null;
-        if (!CollectionUtils.isEmpty(entity.getSettings())) {
-            activeSetting = entity.getSettings().stream().filter(setting -> setting.getName().equalsIgnoreCase(Constants.ACTIVE_SETTING)).findFirst().orElse(null);
-        }
+        Server server = overseerMapper.map(entity, Server.class);
+        server.setLibraries(new HashSet<>(libraryService.resyncLibraries(entity)));
 
-        if (ObjectUtils.isEmpty(activeSetting)) {
-            activeSetting = new ServerSettingEntity();
-            activeSetting.setType(SettingType.BOOLEAN.name());
-            activeSetting.setName(Constants.ACTIVE_SETTING);
-            activeSetting.setVal(Boolean.FALSE.toString());
-        }
-
-        activeSetting.setVal(String.valueOf(active));
-
-        serverSettingRepository.save(activeSetting);
+        return server;
     }
     // endregion - UPDATE -
 
@@ -195,75 +262,18 @@ public class ServerService {
     public void removeServer(String id) {
         try {
             serverRepository.deleteById(id);
-
-            // [TEST]
-            log.debug("Server removed");
         } catch (EmptyResultDataAccessException e) {
-            throw new OverseerNotFoundException("No Servers matching provided id found");
+            throw new OverseerNotFoundException(String.format("No Server found with id: [%s]", id));
         }
     }
     // endregion - DELETE -
 
     // region - Protected Methods -
-    protected ServerEntity configureNewServer(ServerEntity entity) {
-        Set<ServerSettingEntity> settingEntities = CollectionUtils.isEmpty(entity.getSettings()) ? new HashSet<>() : entity.getSettings();
-        Map<String, String> defaultSettings = DefaultSettings.getSettings();
+    protected Set<SettingEntity> configureNewServerSettings(ServerEntity server) {
+        Set<SettingEntity> serverSettings = CollectionUtils.isEmpty(server.getSettings()) ? new HashSet<>() : new HashSet<>(server.getSettings());
+        serverSettings = SettingUtils.syncDefaultSettings(server.getId(), serverSettings, SettingLevel.SERVER);
 
-        for (Map.Entry<String, String> defaultSetting : defaultSettings.entrySet()) {
-            ServerSettingEntity serverSetting = settingEntities.stream().filter(setting -> defaultSetting.getKey().equalsIgnoreCase(setting.getName())).findFirst().orElse(null);
-
-            if (ObjectUtils.isEmpty(serverSetting)) {
-                if (defaultSetting.getKey().equalsIgnoreCase(Constants.ASSET_DIRECTORY_SETTING)) {
-                    defaultSetting.setValue(defaultSetting.getValue() + FilenameUtils.sanitizeFilename(entity.getName()));
-                }
-
-                serverSetting = new ServerSettingEntity();
-                serverSetting.setType(SettingUtils.getSettingType(defaultSetting.getValue()).name());
-            } else {
-                // TODO: validate setting done by user
-            }
-
-            serverSetting.setId(UUID.randomUUID().toString());
-            serverSetting.setServer(entity.thinCopy());
-            serverSetting.setName(defaultSetting.getKey());
-            serverSetting.setVal(defaultSetting.getValue());
-
-            settingEntities.add(serverSetting);
-        }
-
-        entity.setSettings(settingEntities);
-
-        return entity;
-    }
-
-    protected Set<ServerSettingEntity> updateSettings(ServerEntity server, Set<ServerSettingEntity> settings) {
-        List<ServerSettingEntity> serverSettings = CollectionUtils.isEmpty(server.getSettings()) ? new ArrayList<>() : new ArrayList<>(server.getSettings());
-
-        for (ServerSettingEntity setting : settings) {
-            ServerSettingEntity settingEntity = CollectionUtils.isEmpty(serverSettings) ? null : serverSettings.stream()
-                    .filter(serverSetting -> serverSetting.getName().equalsIgnoreCase(setting.getName()))
-                    .findFirst()
-                    .orElse(null);
-
-            if (ObjectUtils.isNotEmpty(settingEntity)) {
-                overseerMapper.map(setting, settingEntity);
-            } else {
-                serverSettings.add(overseerMapper.map(setting, ServerSettingEntity.class));
-            }
-        }
-
-        serverSettings.forEach(setting -> {
-            setting.setId(UUID.randomUUID().toString());
-            setting.setServer(server.thinCopy());
-        });
-
-        try {
-            serverSettings = serverSettingRepository.saveAll(serverSettings);
-        } catch (PersistenceException exception) {
-            throw new OverseerConflictException(exception.getMessage());
-        }
-
-        return new HashSet<>(serverSettings);
+        return serverSettings;
     }
     // endregion - Protected Methods -
 }

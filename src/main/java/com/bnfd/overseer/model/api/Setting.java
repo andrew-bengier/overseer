@@ -1,17 +1,24 @@
 package com.bnfd.overseer.model.api;
 
-import com.bnfd.overseer.model.constants.*;
-import com.google.gson.*;
-import org.apache.commons.lang3.builder.*;
+import com.bnfd.overseer.model.constants.SettingType;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.Comparator;
 
 public class Setting implements Serializable, Comparable<Setting> {
     // region - Class Variables -
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY, name = "id", example = "01955a48-58fa-75ae-bdb1-5287fc4341dd", description = "Setting Id", format = "UUID")
     private String id;
+    @Schema(name = "type", implementation = SettingType.class, description = "Setting Type")
     private SettingType type;
+    @Schema(name = "name", example = "schedule", description = "Setting Name")
     private String name;
+    @Schema(name = "val", example = "0 0 4 ? * SUN *", description = "Setting Value")
     private String val;
     // endregion - Class Variables -
 

@@ -1,9 +1,13 @@
 package com.bnfd.overseer.utils;
 
 
-import org.apache.commons.lang3.*;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.parser.CronParser;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
 
 public class ValidationUtils {
     public static boolean isEmpty(Object object) {
@@ -35,5 +39,16 @@ public class ValidationUtils {
         }
 
         return result;
+    }
+
+    // NOTE: only QUARTZ is currently supported
+    protected static boolean isValidCron(String cronExpression) {
+        try {
+            CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
+            parser.parse(cronExpression);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

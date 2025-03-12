@@ -1,15 +1,15 @@
 package com.bnfd.overseer.launcher;
 
-import org.springframework.boot.context.event.*;
-import org.springframework.context.annotation.*;
-import org.springframework.context.event.*;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
-import java.net.*;
+import java.net.URI;
 
 @Component
-@Profile("!docker")
+@Profile("!docker & !test")
 public class BrowserLauncher {
 
     @EventListener(ApplicationReadyEvent.class)

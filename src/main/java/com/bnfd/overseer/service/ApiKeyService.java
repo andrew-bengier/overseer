@@ -1,20 +1,27 @@
 package com.bnfd.overseer.service;
 
-import com.bnfd.overseer.exception.*;
-import com.bnfd.overseer.model.api.*;
-import com.bnfd.overseer.model.persistence.apikeys.*;
-import com.bnfd.overseer.repository.*;
-import jakarta.persistence.*;
-import lombok.extern.slf4j.*;
+import com.bnfd.overseer.exception.OverseerConflictException;
+import com.bnfd.overseer.exception.OverseerNoContentException;
+import com.bnfd.overseer.exception.OverseerNotFoundException;
+import com.bnfd.overseer.model.api.ApiKey;
+import com.bnfd.overseer.model.constants.ApiKeyType;
+import com.bnfd.overseer.model.persistence.ApiKeyEntity;
+import com.bnfd.overseer.repository.ApiKeyRepository;
+import jakarta.persistence.PersistenceException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.modelmapper.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.dao.*;
-import org.springframework.stereotype.*;
-import org.springframework.transaction.annotation.*;
-import org.springframework.util.*;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -60,22 +67,16 @@ public class ApiKeyService {
             throw new OverseerNotFoundException(String.format("No ApiKey found with id: [%s]", id));
         }
 
-        // [TEST]
-        log.debug("ApiKey: ", entity);
-
         return overseerMapper.map(entity, ApiKey.class);
     }
 
     // TODO: convert to include all search params (repository needs specs)
-    public List<ApiKey> getAllApiKeysByName(String name) {
+    public List<ApiKey> getAllApiKeysByName(ApiKeyType name) {
         List<ApiKeyEntity> entities = apiKeyRepository.findAllByName(name);
 
         if (CollectionUtils.isEmpty(entities)) {
             throw new OverseerNoContentException("No api keys found matching provided search params");
         }
-
-        // [TEST]
-        log.debug("ApiKeys: ", entities.size());
 
         return overseerMapper.map(entities, new TypeToken<List<ApiKey>>() {
         }.getType());
@@ -87,9 +88,6 @@ public class ApiKeyService {
         if (CollectionUtils.isEmpty(entities)) {
             throw new OverseerNoContentException("No api keys found");
         }
-
-        // [TEST]
-        log.debug("ApiKeys: ", entities.size());
 
         return overseerMapper.map(entities, new TypeToken<List<ApiKey>>() {
         }.getType());

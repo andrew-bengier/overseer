@@ -1,19 +1,24 @@
 package com.bnfd.overseer.model.api.info;
 
-import com.bnfd.overseer.utils.*;
-import io.micrometer.common.util.*;
-import lombok.*;
-import org.apache.logging.log4j.util.*;
-import org.springframework.boot.info.*;
-import org.springframework.core.env.*;
+import com.bnfd.overseer.utils.DateUtils;
+import io.micrometer.common.util.StringUtils;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.boot.info.BuildProperties;
+import org.springframework.core.env.Environment;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
 
 @Data
 public class ApiData {
     // region - Class Variables -
+    @Schema(name = "environment", allowableValues = "Docker, dev, prod", description = "Environment")
     private String environment;
+    @Schema(name = "buildInfo", implementation = BuildProperties.class, description = "Build Information")
     private BuildInfo buildInfo;
+    @Schema(name = "gitInfo", implementation = GitInfo.class, description = "Git Information")
     private GitInfo gitInfo;
     // endregion - Class Variables -
 
@@ -25,13 +30,13 @@ public class ApiData {
                 .reduce(String::concat)
                 .orElse("")
                 .trim();
-        this.buildInfo = new BuildInfo(
+        buildInfo = new BuildInfo(
                 buildProperties.getGroup(),
                 buildProperties.getArtifact(),
                 buildProperties.getName(),
                 buildProperties.getVersion()
         );
-        this.gitInfo = new GitInfo(
+        gitInfo = new GitInfo(
                 environment.getProperty("git.branch", Strings.EMPTY),
                 environment.getProperty("git.commit.id", Strings.EMPTY),
                 environment.getProperty("git.commit.message.full", Strings.EMPTY),
