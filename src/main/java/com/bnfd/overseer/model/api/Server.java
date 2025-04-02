@@ -3,6 +3,7 @@ package com.bnfd.overseer.model.api;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -66,7 +67,7 @@ public class Server implements Serializable, Comparable<Server> {
     }
 
     public Set<Setting> addSetting(Setting setting) {
-        if (settings.isEmpty()) {
+        if (CollectionUtils.isEmpty(settings)) {
             settings = new HashSet<>();
         }
 
@@ -76,7 +77,7 @@ public class Server implements Serializable, Comparable<Server> {
     }
 
     public void removeSetting(Setting setting) {
-        if (!settings.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(settings)) {
             settings.remove(setting);
         }
     }
@@ -90,7 +91,7 @@ public class Server implements Serializable, Comparable<Server> {
     }
 
     public Set<Action> addAction(Action action) {
-        if (actions.isEmpty()) {
+        if (CollectionUtils.isEmpty(actions)) {
             actions = new HashSet<>();
         }
 
@@ -100,7 +101,7 @@ public class Server implements Serializable, Comparable<Server> {
     }
 
     public void removeAction(Action action) {
-        if (!actions.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(actions)) {
             actions.remove(action);
         }
     }
@@ -114,7 +115,7 @@ public class Server implements Serializable, Comparable<Server> {
     }
 
     public Set<Library> addLibrary(Library library) {
-        if (libraries.isEmpty()) {
+        if (CollectionUtils.isEmpty(libraries)) {
             libraries = new HashSet<>();
         }
 
@@ -124,7 +125,7 @@ public class Server implements Serializable, Comparable<Server> {
     }
 
     public void removeLibrary(Library library) {
-        if (!libraries.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(libraries)) {
             libraries.remove(library);
         }
     }

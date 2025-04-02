@@ -3,16 +3,13 @@ package com.bnfd.overseer.service;
 import com.bnfd.overseer.exception.OverseerConflictException;
 import com.bnfd.overseer.exception.OverseerNoContentException;
 import com.bnfd.overseer.exception.OverseerNotFoundException;
-import com.bnfd.overseer.model.api.Action;
 import com.bnfd.overseer.model.api.Collection;
-import com.bnfd.overseer.model.api.Server;
-import com.bnfd.overseer.model.api.Setting;
+import com.bnfd.overseer.model.api.*;
 import com.bnfd.overseer.model.constants.SettingLevel;
 import com.bnfd.overseer.model.constants.SettingType;
 import com.bnfd.overseer.model.persistence.*;
-import com.bnfd.overseer.repository.ActionRepository;
-import com.bnfd.overseer.repository.CollectionRepository;
-import com.bnfd.overseer.repository.SettingRepository;
+import com.bnfd.overseer.repository.*;
+import com.bnfd.overseer.service.api.web.TmdbWebApiService;
 import com.bnfd.overseer.utils.ActionUtils;
 import com.bnfd.overseer.utils.Constants;
 import com.bnfd.overseer.utils.SettingUtils;
@@ -37,9 +34,14 @@ public class CollectionService {
     private final ModelMapper overseerMapper;
 
     private final CollectionRepository collectionRepository;
-
+    private final CollectionBuilderRepository collectionBuilderRepository;
     private final SettingRepository settingRepository;
     private final ActionRepository actionRepository;
+
+    private final ApiKeyRepository apiKeyRepository;
+
+    // [TEST]
+    private final TmdbWebApiService tmdbWebApiService;
     // endregion - Class Variables -
 
     // region - Constructors -
@@ -47,12 +49,18 @@ public class CollectionService {
     public CollectionService(
             @Qualifier("overseer-mapper") ModelMapper overseerMapper,
             CollectionRepository collectionRepository,
+            CollectionBuilderRepository collectionBuilderRepository,
             SettingRepository settingRepository,
-            ActionRepository actionRepository) {
+            ActionRepository actionRepository,
+            ApiKeyRepository apiKeyRepository,
+            TmdbWebApiService tmdbWebApiService) {
         this.overseerMapper = overseerMapper;
         this.collectionRepository = collectionRepository;
+        this.collectionBuilderRepository = collectionBuilderRepository;
         this.settingRepository = settingRepository;
         this.actionRepository = actionRepository;
+        this.apiKeyRepository = apiKeyRepository;
+        this.tmdbWebApiService = tmdbWebApiService;
     }
     // endregion - Constructors -
 
@@ -74,13 +82,17 @@ public class CollectionService {
         });
 
         collectionEntity.getBuilders().forEach(collectionBuilder -> {
-            BuilderEntity builder = collectionBuilder.getBuilder();
-            String name = builder.getName();
-            List<String> attributes = collectionBuilder.getBuilderAttributes();
-            log.debug("Processing builder {} {} - {}: {}", builder.getType(), builder.getCategory(), name, String.join(", ", attributes));
+            log.debug("Processing builder {} {} - {}: {}", collectionBuilder.getType(), collectionBuilder.getCategory(), collectionBuilder.getName(), String.join(", ", collectionBuilder.getBuilderAttributes()));
         });
 
         return overseerMapper.map(entity.get(), Collection.class);
+    }
+
+    // [TEST]
+    // process - getCollectionMedia
+    public List<Media> getCollectionMedia(String collectionId) {
+//        return tmdbWebApiService.getMediaFromCollection(collectionId);
+        return List.of(tmdbWebApiService.getSeries(collectionId));
     }
 
     // region - CREATE -
@@ -88,22 +100,29 @@ public class CollectionService {
     public Collection addCollection(Server server, Collection collection, boolean process) {
         CollectionEntity entity = overseerMapper.map(collection, CollectionEntity.class);
         entity.setId(UUID.randomUUID().toString());
+        entity.setBuilders(null);
 
         try {
             entity = collectionRepository.save(entity);
 
+            Set<CollectionBuilderEntity> builderEntities = overseerMapper.map(collection.getBuilders(), new TypeToken<Set<CollectionBuilderEntity>>() {
+            }.getType());
+            builderEntities.forEach(builder -> {
+                builder.setId(UUID.randomUUID().toString());
+            });
+            entity.setBuilders(new HashSet<>(collectionBuilderRepository.saveAll(builderEntities)));
+
             Set<SettingEntity> settingEntities = configureNewCollectionSettings(entity, overseerMapper.map(server, ServerEntity.class));
-            settingEntities = new HashSet<>(settingRepository.saveAll(settingEntities));
-            entity.setSettings(settingEntities);
+            entity.setSettings(new HashSet<>(settingRepository.saveAll(settingEntities)));
         } catch (PersistenceException exception) {
             throw new OverseerConflictException(exception.getMessage());
         }
 
-        if (process) {
-            // [TEST]
-            log.debug("Collection processed");
-            // TODO: process collection
-        }
+//        if (process) {
+//            // [TEST]
+//            log.debug("Collection processed");
+//            // TODO: process collection
+//        }
 
         return overseerMapper.map(entity, Collection.class);
     }

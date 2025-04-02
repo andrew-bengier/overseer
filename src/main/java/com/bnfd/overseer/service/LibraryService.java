@@ -4,23 +4,23 @@ import com.bnfd.overseer.exception.OverseerConflictException;
 import com.bnfd.overseer.exception.OverseerException;
 import com.bnfd.overseer.exception.OverseerNoContentException;
 import com.bnfd.overseer.exception.OverseerNotFoundException;
-import com.bnfd.overseer.model.api.Action;
-import com.bnfd.overseer.model.api.Library;
-import com.bnfd.overseer.model.api.Setting;
+import com.bnfd.overseer.model.api.*;
+import com.bnfd.overseer.model.constants.MediaIdType;
 import com.bnfd.overseer.model.constants.SettingLevel;
 import com.bnfd.overseer.model.constants.SettingType;
 import com.bnfd.overseer.model.persistence.*;
 import com.bnfd.overseer.repository.ActionRepository;
 import com.bnfd.overseer.repository.LibraryRepository;
 import com.bnfd.overseer.repository.SettingRepository;
-import com.bnfd.overseer.service.api.ApiService;
-import com.bnfd.overseer.service.api.PlexApiService;
+import com.bnfd.overseer.service.api.media.server.MediaServerApiService;
+import com.bnfd.overseer.service.api.media.server.PlexMediaServerApiService;
 import com.bnfd.overseer.utils.ActionUtils;
 import com.bnfd.overseer.utils.ApiUtils;
 import com.bnfd.overseer.utils.Constants;
 import com.bnfd.overseer.utils.SettingUtils;
 import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -30,12 +30,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 import static com.bnfd.overseer.model.constants.ApiKeyType.PLEX;
 
@@ -49,7 +46,7 @@ public class LibraryService {
 
     private final SettingRepository settingRepository;
 
-    private final List<ApiService> apiServices;
+    private final List<MediaServerApiService> mediaServerApiServices;
     private final ActionRepository actionRepository;
     // endregion - Class Variables -
 
@@ -59,33 +56,51 @@ public class LibraryService {
     public LibraryService(@Qualifier("overseer-mapper") ModelMapper overseerMapper,
                           LibraryRepository libraryRepository,
                           SettingRepository settingRepository,
-                          List<ApiService> apiServices,
+                          List<MediaServerApiService> mediaServerApiServices,
                           ActionRepository actionRepository) {
         this.overseerMapper = overseerMapper;
         this.libraryRepository = libraryRepository;
         this.settingRepository = settingRepository;
-        this.apiServices = apiServices;
+        this.mediaServerApiServices = mediaServerApiServices;
         this.actionRepository = actionRepository;
     }
     // endregion - Constructors -
 
     // TODO: process library
+    public List<Media> getMediaContainer(Server server) {
+        ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
+
+        MediaServerApiService service;
+        switch (apiKey.getName()) {
+            case PLEX ->
+                    service = ApiUtils.retrieveService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+            default -> throw new OverseerException("Error - service for server type not currently supported");
+        }
+
+        try {
+            return service.getMedia(apiKey, "1", Map.of(MediaIdType.IMDB, List.of("tt0084602")));
+        } catch (PersistenceException | DataIntegrityViolationException | UnsupportedEncodingException exception) {
+            throw new OverseerConflictException(exception.getMessage());
+        }
+    }
+
     // region - CREATE -
     @Transactional
     public List<Library> addLibraries(ServerEntity server) {
         Set<LibraryEntity> libraries = server.getLibraries();
         ApiKeyEntity apiKey = server.getApiKey();
 
-        ApiService service;
+        MediaServerApiService service;
         switch (apiKey.getName()) {
-            case PLEX -> service = ApiUtils.retrieveService(PLEX, PlexApiService.class, apiServices, true);
+            case PLEX ->
+                    service = ApiUtils.retrieveService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
         }
 
         try {
             List<LibraryEntity> entities = service.getLibraries(server);
 
-            if (!CollectionUtils.isEmpty(libraries)) {
+            if (CollectionUtils.isNotEmpty(libraries)) {
                 log.info("Found {} libraries", libraries.size());
                 return overseerMapper.map(libraries, new TypeToken<List<Library>>() {
                 }.getType());
@@ -97,7 +112,7 @@ public class LibraryService {
                         entity = libraryRepository.save(entity);
 
                         Set<SettingEntity> settingEntities = configureNewLibrarySettings(entity, server);
-                        settingEntities = new HashSet<>(settingRepository.saveAll(settingEntities));
+                        entity.setSettings(new HashSet<>(settingRepository.saveAll(settingEntities)));
                         entity.setSettings(settingEntities);
                     });
                 } catch (PersistenceException exception) {
@@ -143,9 +158,10 @@ public class LibraryService {
         Set<LibraryEntity> currentLibraries = server.getLibraries();
         ApiKeyEntity apiKey = server.getApiKey();
 
-        ApiService service;
+        MediaServerApiService service;
         switch (apiKey.getName()) {
-            case PLEX -> service = ApiUtils.retrieveService(PLEX, PlexApiService.class, apiServices, true);
+            case PLEX ->
+                    service = ApiUtils.retrieveService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
         }
 
@@ -165,8 +181,7 @@ public class LibraryService {
                     entity = libraryRepository.save(entity);
 
                     Set<SettingEntity> settingEntities = configureNewLibrarySettings(entity, server);
-                    settingEntities = new HashSet<>(settingRepository.saveAll(settingEntities));
-                    entity.setSettings(settingEntities);
+                    entity.setSettings(new HashSet<>(settingRepository.saveAll(settingEntities)));
                 } else {
                     entity.setName(library.getName());
                     entity = libraryRepository.save(entity);

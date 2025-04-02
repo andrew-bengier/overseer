@@ -18,10 +18,12 @@ public class Constants {
 
     // region - Plex Api -
     public static final String PLEX_TOKEN_PARAM = "?X-Plex-Token=";
+    public static final String PLEX_ALL_URL = "/all";
     public static final String PLEX_LIBRARIES_URL = "/library/sections";
-    public static final String PLEX_LIBRARY_ITEMS_URL = "/library/sections/{referenceId}/all";
-    public static final String PLEX_COLLECTIONS_URL = "/library/sections/{referenceId}/collections";
-    public static final String PLEX_MEDIA_ITEM_URL = "library/metadata/{id}";
+    public static final String PLEX_LIBRARY_URL = "/library/sections/{referenceId}";
+    public static final String PLEX_LIBRARY_COLLECTIONS_URL = "/library/sections/{referenceId}/collections";
+    public static final String PLEX_COLLECTIONS_URL = "/library/collection/{referenceId}";
+    public static final String PLEX_MEDIA_ITEM_URL = "/library/metadata/{referenceId}";
     public static final String PLEX_INCLUDE_CHILDREN_URL = "/children";
     // endregion - Plex Api -
 }

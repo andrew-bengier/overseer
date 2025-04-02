@@ -5,33 +5,36 @@ import com.bnfd.overseer.model.constants.BuilderType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 
-public class Builder implements Serializable, Comparable<Builder> {
+public class BuilderOption implements Serializable, Comparable<BuilderOption> {
     // region - Class Variables -
     @Schema(accessMode = Schema.AccessMode.READ_ONLY, name = "id", example = "01955a48-58fa-75ae-bdb1-5287fc4341dd", description = "Builder Id", format = "UUID")
     private String id;
-    @Schema(name = "templateId", example = "01955a48-58fa-75ae-bdb1-5287fc4341dd", description = "Template Id - builder option Id", format = "UUID")
-    private String templateId;
     @Schema(name = "type", implementation = BuilderType.class, description = "Builder Type")
     private BuilderType type;
     @Schema(name = "category", implementation = BuilderCategory.class, description = "Builder Category")
     private BuilderCategory category;
     @Schema(name = "name", example = "Movie", description = "Builder Name")
     private String name;
-    @Schema(name = "attributes", example = "[645]", description = "Builder Attributes - comma separated list")
-    private List<String> attributes;
+    @Schema(name = "version", example = "0.0.1", description = "Version - references when builders supported")
+    private String version;
     // endregion - Class Variables -
 
     // region - Constructors -
-    public Builder() {
+    public BuilderOption() {
+    }
+
+    public BuilderOption(String id, BuilderType type, BuilderCategory category, String name, String version) {
+        this.id = id;
+        this.type = type;
+        this.category = category;
+        this.name = name;
+        this.version = version;
     }
     // endregion - Constructors -
 
@@ -42,14 +45,6 @@ public class Builder implements Serializable, Comparable<Builder> {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getTemplateId() {
-        return templateId;
-    }
-
-    public void setTemplateId(String templateId) {
-        this.templateId = templateId;
     }
 
     public BuilderType getType() {
@@ -76,38 +71,22 @@ public class Builder implements Serializable, Comparable<Builder> {
         this.name = name;
     }
 
-    public List<String> getAttributes() {
-        return attributes;
+    public String getVersion() {
+        return version;
     }
 
-    public void setAttributes(List<String> attributes) {
-        this.attributes = attributes;
-    }
-
-    public List<String> addAttribute(String attribute) {
-        if (CollectionUtils.isEmpty(attributes)) {
-            attributes = new ArrayList<>();
-        }
-
-        attributes.add(attribute);
-
-        return attributes;
-    }
-
-    public void removeAttribute(String attribute) {
-        if (CollectionUtils.isNotEmpty(attributes)) {
-            attributes.remove(attribute);
-        }
+    public void setVersion(String version) {
+        this.version = version;
     }
     // endregion - Accessor Methods -
 
     // region - Overridden Methods -
     @Override
-    public int compareTo(Builder builder) {
-        return Comparator.comparing(Builder::getType)
-                .thenComparing(Builder::getCategory)
-                .thenComparing(Builder::getName)
-                .compare(this, builder);
+    public int compareTo(BuilderOption option) {
+        return Comparator.comparing(BuilderOption::getType)
+                .thenComparing(BuilderOption::getCategory)
+                .thenComparing(BuilderOption::getName)
+                .compare(this, option);
     }
 
     @Override
@@ -117,7 +96,7 @@ public class Builder implements Serializable, Comparable<Builder> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Builder) {
+        if (obj instanceof BuilderOption) {
             return EqualsBuilder.reflectionEquals(obj, this);
         } else {
             return false;

@@ -1,9 +1,18 @@
 package com.bnfd.overseer.model.mapper;
 
 import com.bnfd.overseer.model.api.*;
+import com.bnfd.overseer.model.constants.MediaIdType;
+import com.bnfd.overseer.model.constants.MediaType;
+import com.bnfd.overseer.model.constants.MetadataType;
 import com.bnfd.overseer.model.media.plex.Directory;
+import com.bnfd.overseer.model.media.plex.Video;
 import com.bnfd.overseer.model.persistence.*;
+import info.movito.themoviedbapi.model.collections.Part;
+import info.movito.themoviedbapi.model.movies.MovieDb;
+import info.movito.themoviedbapi.model.tv.season.TvSeasonDb;
+import info.movito.themoviedbapi.model.tv.series.TvSeriesDb;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.spi.MappingContext;
@@ -11,7 +20,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ObjectUtils;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -22,6 +30,7 @@ public class OverseerMapper extends ModelMapper {
     @Bean("overseer-mapper")
     public ModelMapper mapper() {
         ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setAmbiguityIgnored(true);
 
         // region - ApiKey -
         mapper.addConverter(apiKeyModelToEntity());
@@ -53,9 +62,25 @@ public class OverseerMapper extends ModelMapper {
         mapper.addConverter(collectionEntityToModel());
         // endregion - Collection -
 
+        // region - Builder -
+        mapper.addConverter(builderModelToEntity());
+        mapper.addConverter(builderEntityToModel());
+        // endregion - Builder -
+
+        // region - Builder Option -
+        mapper.addConverter(builderOptionModelToEntity());
+        mapper.addConverter(builderOptionEntityToModel());
+        // endregion - Builder Option -
+
         // region - Plex API -
         mapper.addConverter(plexDirectoryToLibraryEntity());
+        mapper.addConverter(plexVideoToMedia());
         // endregion - Plex API -
+
+        // region - Tmdb API -
+        mapper.addConverter(tmdbPartToMedia());
+        mapper.addConverter(tmdbMovieDbToMedia());
+        // endregion - Tmdb API -
 
         return mapper;
     }
@@ -213,19 +238,19 @@ public class OverseerMapper extends ModelMapper {
                     entity.setApiKey(map(mappingContext.getSource().getApiKey(), ApiKeyEntity.class));
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getSettings())) {
                     Set<SettingEntity> settings = mappingContext.getSource().getSettings().stream().map(setting -> map(setting, SettingEntity.class)).collect(Collectors.toSet());
                     settings.forEach(setting -> setting.setReferenceId(entity.getId()));
                     entity.setSettings(settings);
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getActions())) {
                     Set<ActionEntity> actions = mappingContext.getSource().getActions().stream().map(action -> map(action, ActionEntity.class)).collect(Collectors.toSet());
                     actions.forEach(action -> action.setReferenceId(entity.getId()));
                     entity.setActions(actions);
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getLibraries())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getLibraries())) {
                     Set<LibraryEntity> libraries = mappingContext.getSource().getLibraries().stream().map(library -> map(library, LibraryEntity.class)).collect(Collectors.toSet());
                     libraries.forEach(library -> library.setServerId(entity.getId()));
                     entity.setLibraries(libraries);
@@ -254,15 +279,15 @@ public class OverseerMapper extends ModelMapper {
                     model.setApiKey(map(mappingContext.getSource().getApiKey(), ApiKey.class));
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getSettings())) {
                     model.setSettings(mappingContext.getSource().getSettings().stream().map(setting -> map(setting, Setting.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getActions())) {
                     model.setActions(mappingContext.getSource().getActions().stream().map(action -> map(action, Action.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getLibraries())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getLibraries())) {
                     model.setLibraries(mappingContext.getSource().getLibraries().stream().map(library -> map(library, Library.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
@@ -290,19 +315,19 @@ public class OverseerMapper extends ModelMapper {
                 entity.setType(mappingContext.getSource().getType());
                 entity.setName(mappingContext.getSource().getName());
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getSettings())) {
                     Set<SettingEntity> settings = mappingContext.getSource().getSettings().stream().map(setting -> map(setting, SettingEntity.class)).collect(Collectors.toSet());
                     settings.forEach(setting -> setting.setReferenceId(entity.getId()));
                     entity.setSettings(settings);
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getActions())) {
                     Set<ActionEntity> actions = mappingContext.getSource().getActions().stream().map(action -> map(action, ActionEntity.class)).collect(Collectors.toSet());
                     actions.forEach(action -> action.setReferenceId(entity.getId()));
                     entity.setActions(actions);
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getCollections())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getCollections())) {
                     Set<CollectionEntity> collections = mappingContext.getSource().getCollections().stream().map(collection -> map(collection, CollectionEntity.class)).collect(Collectors.toSet());
                     collections.forEach(collection -> collection.setLibraryId(entity.getId()));
                     entity.setCollections(collections);
@@ -330,15 +355,15 @@ public class OverseerMapper extends ModelMapper {
                 model.setType(mappingContext.getSource().getType());
                 model.setName(mappingContext.getSource().getName());
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getSettings())) {
                     model.setSettings(mappingContext.getSource().getSettings().stream().map(setting -> map(setting, Setting.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getActions())) {
                     model.setActions(mappingContext.getSource().getActions().stream().map(action -> map(action, Action.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getCollections())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getCollections())) {
                     model.setCollections(mappingContext.getSource().getCollections().stream().map(collection -> map(collection, Collection.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
@@ -365,30 +390,17 @@ public class OverseerMapper extends ModelMapper {
                 entity.setExternalId(mappingContext.getSource().getReferenceId());
                 entity.setName(mappingContext.getSource().getName());
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getBuilders())) {
-                    Set<CollectionBuilderEntity> collectionBuilderEntities = new HashSet<>();
-
-                    mappingContext.getSource().getBuilders().forEach(builder -> {
-                        collectionBuilderEntities.add(
-                                new CollectionBuilderEntity(
-                                        builder.getReferenceId(),
-                                        entity,
-                                        new BuilderEntity(builder.getId(), builder.getType(), builder.getCategory(), builder.getName(), builder.getVersion()),
-                                        builder.getAttributes()
-                                )
-                        );
-                    });
-
-                    entity.setBuilders(collectionBuilderEntities);
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getBuilders())) {
+                    entity.setBuilders(mappingContext.getSource().getBuilders().stream().map(builder -> map(builder, CollectionBuilderEntity.class)).collect(Collectors.toSet()));
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getSettings())) {
                     Set<SettingEntity> settings = mappingContext.getSource().getSettings().stream().map(setting -> map(setting, SettingEntity.class)).collect(Collectors.toSet());
                     settings.forEach(setting -> setting.setReferenceId(entity.getId()));
                     entity.setSettings(settings);
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getActions())) {
                     Set<ActionEntity> actions = mappingContext.getSource().getActions().stream().map(action -> map(action, ActionEntity.class)).collect(Collectors.toSet());
                     actions.forEach(action -> action.setReferenceId(entity.getId()));
                     entity.setActions(actions);
@@ -415,31 +427,15 @@ public class OverseerMapper extends ModelMapper {
                 model.setReferenceId(mappingContext.getSource().getExternalId());
                 model.setName(mappingContext.getSource().getName());
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getBuilders())) {
-                    Set<Builder> builders = new HashSet<>();
-
-                    mappingContext.getSource().getBuilders().forEach(builder -> {
-                        builders.add(
-                                new Builder(
-                                        builder.getBuilder().getId(),
-                                        builder.getId(),
-                                        builder.getBuilder().getType(),
-                                        builder.getBuilder().getCategory(),
-                                        builder.getBuilder().getName(),
-                                        builder.getBuilder().getVersion(),
-                                        builder.getBuilderAttributes()
-                                )
-                        );
-                    });
-
-                    model.setBuilders(builders);
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getBuilders())) {
+                    model.setBuilders(mappingContext.getSource().getBuilders().stream().map(builder -> map(builder, Builder.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getSettings())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getSettings())) {
                     model.setSettings(mappingContext.getSource().getSettings().stream().map(setting -> map(setting, Setting.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
-                if (!CollectionUtils.isEmpty(mappingContext.getSource().getActions())) {
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getActions())) {
                     model.setActions(mappingContext.getSource().getActions().stream().map(action -> map(action, Action.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
@@ -448,6 +444,100 @@ public class OverseerMapper extends ModelMapper {
         };
     }
     // endregion - Collection -
+
+    // region - Builder -
+    public Converter<CollectionBuilderEntity, Builder> builderEntityToModel() {
+        return new Converter<CollectionBuilderEntity, Builder>() {
+            @Override
+            public Builder convert(MappingContext<CollectionBuilderEntity, Builder> mappingContext) {
+                Builder model;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    model = new Builder();
+                } else {
+                    model = mappingContext.getDestination();
+                }
+
+                model.setId(mappingContext.getSource().getId());
+                model.setTemplateId(mappingContext.getSource().getTemplateId());
+                model.setType(mappingContext.getSource().getType());
+                model.setCategory(mappingContext.getSource().getCategory());
+                model.setName(mappingContext.getSource().getName());
+                model.setAttributes(mappingContext.getSource().getBuilderAttributes());
+
+                return model;
+            }
+        };
+    }
+
+    public Converter<Builder, CollectionBuilderEntity> builderModelToEntity() {
+        return new Converter<Builder, CollectionBuilderEntity>() {
+            @Override
+            public CollectionBuilderEntity convert(MappingContext<Builder, CollectionBuilderEntity> mappingContext) {
+                CollectionBuilderEntity entity;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    entity = new CollectionBuilderEntity();
+                } else {
+                    entity = mappingContext.getDestination();
+                }
+
+                entity.setId(mappingContext.getSource().getId());
+                entity.setTemplateId(mappingContext.getSource().getTemplateId());
+                entity.setType(mappingContext.getSource().getType());
+                entity.setCategory(mappingContext.getSource().getCategory());
+                entity.setName(mappingContext.getSource().getName());
+                entity.setBuilderAttributes(mappingContext.getSource().getAttributes());
+
+                return entity;
+            }
+        };
+    }
+    // endregion - Builder -
+
+    // region - Builder Option -
+    public Converter<BuilderOptionEntity, BuilderOption> builderOptionEntityToModel() {
+        return new Converter<BuilderOptionEntity, BuilderOption>() {
+            @Override
+            public BuilderOption convert(MappingContext<BuilderOptionEntity, BuilderOption> mappingContext) {
+                BuilderOption model;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    model = new BuilderOption();
+                } else {
+                    model = mappingContext.getDestination();
+                }
+
+                model.setId(mappingContext.getSource().getId());
+                model.setType(mappingContext.getSource().getType());
+                model.setCategory(mappingContext.getSource().getCategory());
+                model.setName(mappingContext.getSource().getName());
+                model.setVersion(mappingContext.getSource().getVersion());
+
+                return model;
+            }
+        };
+    }
+
+    public Converter<BuilderOption, BuilderOptionEntity> builderOptionModelToEntity() {
+        return new Converter<BuilderOption, BuilderOptionEntity>() {
+            @Override
+            public BuilderOptionEntity convert(MappingContext<BuilderOption, BuilderOptionEntity> mappingContext) {
+                BuilderOptionEntity entity;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    entity = new BuilderOptionEntity();
+                } else {
+                    entity = mappingContext.getDestination();
+                }
+
+                entity.setId(mappingContext.getSource().getId());
+                entity.setType(mappingContext.getSource().getType());
+                entity.setCategory(mappingContext.getSource().getCategory());
+                entity.setName(mappingContext.getSource().getName());
+                entity.setVersion(mappingContext.getSource().getVersion());
+
+                return entity;
+            }
+        };
+    }
+    // endregion - Builder Option -
 
     // region - Plex API -
     // Directory - Library
@@ -470,6 +560,195 @@ public class OverseerMapper extends ModelMapper {
             }
         };
     }
+
+    private Converter<Video, Media> plexVideoToMedia() {
+        return new Converter<Video, Media>() {
+            @Override
+            public Media convert(MappingContext<Video, Media> mappingContext) {
+                Media media;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    media = new Media();
+                } else {
+                    media = mappingContext.getDestination();
+                }
+
+                media.setExternalId(mappingContext.getSource().getRatingKey());
+                media.setAcquired(true);
+
+                if (StringUtils.isNotBlank(mappingContext.getSource().getTitle())) {
+                    media.addMetadata(new Metadata(null, MetadataType.TITLE.name(), mappingContext.getSource().getTitle()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getTagline())) {
+                    media.addMetadata(new Metadata(null, MetadataType.TAGLINE.name(), mappingContext.getSource().getTagline()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getYear())) {
+                    media.addMetadata(new Metadata(null, MetadataType.RELEASE_DATE.name(), mappingContext.getSource().getYear()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getSummary())) {
+                    media.addMetadata(new Metadata(null, MetadataType.SUMMARY.name(), mappingContext.getSource().getSummary()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getThumb())) {
+                    media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), mappingContext.getSource().getThumb()));
+                }
+
+                return media;
+            }
+        };
+    }
     // endregion - Plex API -
+
+    // region - Tmdb API -
+    public Converter<Part, Media> tmdbPartToMedia() {
+        return new Converter<Part, Media>() {
+            @Override
+            public Media convert(MappingContext<Part, Media> mappingContext) {
+                Media media;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    media = new Media();
+                } else {
+                    media = mappingContext.getDestination();
+                }
+
+                if (StringUtils.isNotBlank(mappingContext.getSource().getTitle())) {
+                    media.addMetadata(new Metadata(null, MetadataType.TITLE.name(), mappingContext.getSource().getTitle()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getReleaseDate())) {
+                    media.addMetadata(new Metadata(null, MetadataType.RELEASE_DATE.name(), mappingContext.getSource().getReleaseDate()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getOverview())) {
+                    media.addMetadata(new Metadata(null, MetadataType.SUMMARY.name(), mappingContext.getSource().getOverview()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getPosterPath())) {
+                    media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), mappingContext.getSource().getPosterPath()));
+                }
+
+                return media;
+            }
+        };
+    }
+
+    public Converter<MovieDb, Media> tmdbMovieDbToMedia() {
+        return new Converter<MovieDb, Media>() {
+            @Override
+            public Media convert(MappingContext<MovieDb, Media> mappingContext) {
+                Media media;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    media = new Media();
+                } else {
+                    media = mappingContext.getDestination();
+                }
+
+                media.setType(MediaType.MOVIE);
+                if (StringUtils.isNotBlank(mappingContext.getSource().getTitle())) {
+                    media.addMetadata(new Metadata(null, MetadataType.TITLE.name(), mappingContext.getSource().getTitle()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getOriginalTitle())) {
+                    media.addMetadata(new Metadata(null, MetadataType.ORIGINAL_TITLE.name(), mappingContext.getSource().getOriginalTitle()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getTagline())) {
+                    media.addMetadata(new Metadata(null, MetadataType.TAGLINE.name(), mappingContext.getSource().getTagline()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getReleaseDate())) {
+                    media.addMetadata(new Metadata(null, MetadataType.RELEASE_DATE.name(), mappingContext.getSource().getReleaseDate()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getOverview())) {
+                    media.addMetadata(new Metadata(null, MetadataType.SUMMARY.name(), mappingContext.getSource().getOverview()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getPosterPath())) {
+                    media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), mappingContext.getSource().getPosterPath()));
+                }
+
+                return media;
+            }
+        };
+    }
+
+    public Converter<TvSeriesDb, Media> tmdbSeriesToMedia() {
+        return new Converter<TvSeriesDb, Media>() {
+            @Override
+            public Media convert(MappingContext<TvSeriesDb, Media> mappingContext) {
+                Media media;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    media = new Media();
+                } else {
+                    media = mappingContext.getDestination();
+                }
+
+                media.setType(MediaType.SERIES);
+                if (StringUtils.isNotBlank(mappingContext.getSource().getName())) {
+                    media.addMetadata(new Metadata(null, MetadataType.TITLE.name(), mappingContext.getSource().getName()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getOriginalName())) {
+                    media.addMetadata(new Metadata(null, MetadataType.ORIGINAL_TITLE.name(), mappingContext.getSource().getOriginalName()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getOverview())) {
+                    media.addMetadata(new Metadata(null, MetadataType.SUMMARY.name(), mappingContext.getSource().getOverview()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getTagline())) {
+                    media.addMetadata(new Metadata(null, MetadataType.TAGLINE.name(), mappingContext.getSource().getTagline()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getFirstAirDate())) {
+                    media.addMetadata(new Metadata(null, MetadataType.RELEASE_DATE.name(), mappingContext.getSource().getFirstAirDate()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getPosterPath())) {
+                    media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), mappingContext.getSource().getPosterPath()));
+                }
+                if (!ObjectUtils.isEmpty(mappingContext.getSource().getExternalIds())) {
+                    if (StringUtils.isNotBlank(mappingContext.getSource().getExternalIds().getImdbId())) {
+                        media.addMetadata(new Metadata(null, MetadataType.EXTERNAL_ID.name(), MediaIdType.IMDB.name() + "_" + mappingContext.getSource().getExternalIds().getImdbId()));
+                    }
+                    if (StringUtils.isNotBlank(mappingContext.getSource().getExternalIds().getTvdbId())) {
+                        media.addMetadata(new Metadata(null, MetadataType.EXTERNAL_ID.name(), MediaIdType.TVDB.name() + "_" + mappingContext.getSource().getExternalIds().getTvdbId()));
+                    }
+                }
+
+//                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getSeasons())) {
+//                    media.setChildren(mappingContext.getSource().getSeasons().stream().map(season -> map(season, Media.class)).collect(Collectors.toCollection(TreeSet::new)));
+//                }
+
+                return media;
+            }
+        };
+    }
+
+    public Converter<TvSeasonDb, Media> tmdbTvSeasonToMedia() {
+        return new Converter<TvSeasonDb, Media>() {
+            @Override
+            public Media convert(MappingContext<TvSeasonDb, Media> mappingContext) {
+                Media media;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    media = new Media();
+                } else {
+                    media = mappingContext.getDestination();
+                }
+
+                media.setType(MediaType.SEASON);
+                if (StringUtils.isNotBlank(mappingContext.getSource().getName())) {
+                    media.addMetadata(new Metadata(null, MetadataType.TITLE.name(), mappingContext.getSource().getName()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getOverview())) {
+                    media.addMetadata(new Metadata(null, MetadataType.SUMMARY.name(), mappingContext.getSource().getOverview()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getAirDate())) {
+                    media.addMetadata(new Metadata(null, MetadataType.RELEASE_DATE.name(), mappingContext.getSource().getAirDate()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getPosterPath())) {
+                    media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), mappingContext.getSource().getPosterPath()));
+                }
+                if (!ObjectUtils.isEmpty(mappingContext.getSource().getSeasonNumber())) {
+                    media.addMetadata(new Metadata(null, MetadataType.NUMBER.name(), mappingContext.getSource().getSeasonNumber().toString()));
+                }
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getEpisodes())) {
+                    media.addMetadata(new Metadata(null, MetadataType.COUNT.name(), String.valueOf(mappingContext.getSource().getEpisodes().size())));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getPosterPath())) {
+                    media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), mappingContext.getSource().getPosterPath()));
+                }
+
+                return media;
+            }
+        };
+    }
+    // endregion - Tmdb API -
     // endregion - Converters -
 }

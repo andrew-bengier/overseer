@@ -11,9 +11,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@XmlRootElement(name = "Producer")
+@XmlRootElement(name = "Image")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Producer {
-    @XmlAttribute(name = "tag")
-    public String tag;
+public class Image {
+    @XmlAttribute(name = "alt")
+    private String alt;
+    @XmlAttribute(name = "type")
+    private String type;
+    @XmlAttribute(name = "url")
+    private String url;
 }

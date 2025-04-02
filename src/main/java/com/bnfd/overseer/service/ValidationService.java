@@ -199,6 +199,34 @@ public class ValidationService {
         checkCollectionInvalidAttributes(collection, id, isNew);
     }
 
+    public void validateCollectionForProcessing(Collection collection) throws Throwable {
+        errorType = null;
+        errors = new ArrayList<>();
+
+        if (ValidationUtils.isEmpty(collection)) {
+            throw ErrorCreator.createThrowable(OverseerBadRequestException.class, List.of("Collection is empty or null"));
+        }
+
+        if (StringUtils.isBlank(collection.getLibraryId())) {
+            errorType = OverseerUnprocessableException.class;
+            errors.add("Missing collection library id");
+        }
+
+        if (StringUtils.isBlank(collection.getReferenceId())) {
+            errorType = OverseerUnprocessableException.class;
+            errors.add("Missing collection reference id");
+        }
+
+        if (StringUtils.isBlank(collection.getName())) {
+            errorType = OverseerUnprocessableException.class;
+            errors.add("Missing collection name");
+        }
+
+        if (ObjectUtils.isNotEmpty(errorType)) {
+            throw ErrorCreator.createThrowable(errorType, errors);
+        }
+    }
+
     protected void checkCollectionMissingRequiredAttributes(Collection collection, boolean isNew) throws Throwable {
         if (!isNew) {
             if (ObjectUtils.isEmpty(collection.getId())) {
@@ -211,6 +239,8 @@ public class ValidationService {
             errorType = OverseerBadRequestException.class;
             errors.add("Missing collection name");
         }
+
+        // Add builders check - at least 1 builder and attributes for builder, then later check for builder validation
 
         if (ObjectUtils.isNotEmpty(errorType)) {
             throw ErrorCreator.createThrowable(errorType, errors);

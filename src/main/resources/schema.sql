@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS api_keys
     key  VARCHAR2 (255) NOT NULL,
     url  VARCHAR2 (150) NULL,
     PRIMARY KEY (id),
-    CONSTRAINT unique_api_key UNIQUE (name, KEY)
+    CONSTRAINT unique_api_key UNIQUE (name, key)
 );
 
 -- Settings
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS libraries
 (
     id          VARCHAR2 (255) NOT NULL,
     server_id   VARCHAR2 (255) NOT NULL,
-    external_id VARCHAR2 (255) NOT NULL,
+    external_id VARCHAR2 (255)     NULL,
     type        VARCHAR2 (50)  NOT NULL,
     name        VARCHAR2 (50)  NOT NULL,
     PRIMARY KEY (id),
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS libraries
 );
 
 -- Builders
-CREATE TABLE IF NOT EXISTS builders
+CREATE TABLE IF NOT EXISTS builder_options
 (
     id       VARCHAR2 (255) NOT NULL,
     type     VARCHAR2 (255) NOT NULL,
@@ -67,12 +67,12 @@ CREATE TABLE IF NOT EXISTS builders
     CONSTRAINT unique_builder UNIQUE (type, category, name)
 );
 
-MERGE INTO builders (id, type, category, name, version)
+MERGE INTO builder_options (id, type, category, name, version)
     KEY (type, category, name)
     VALUES
 --     ('01952577-e1ed-775a-8fef-ca56b6a4eff9', 'Plex', 'Label', 'Plex Smart Label', '0.0.1'),
 --     ('01952577-e1ed-7c9a-8dec-1af5a41abb63', 'Plex', 'Filter', 'Plex Smart Filter', '0.0.1'),
-    ('01952577-e1ed-7b45-a377-1cc9cdfccf5d', 'TMDB', 'List',  'Collection', '0.0.1');
+    ('01952577-e1ed-7b45-a377-1cc9cdfccf5d', 'TMDB', 'LIST',  'Collection', '0.0.1');
 --     ('01952577-e1ed-721e-9458-32d05cc82a4d', 'TMDB', 'Media', 'Movie',      '0.0.1'),
 --     ('01952577-e1ed-769c-b2e6-52c9bfe552e1', 'TMDB', 'List',  'List',       '0.0.1'),
 --     ('01952577-e1ed-71fe-9922-3d15f31c1eb6', 'TMDB', 'Media', 'Show',       '0.0.1'),
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS collections
 (
     id          VARCHAR2 (255) NOT NULL,
     library_id  VARCHAR2 (255) NOT NULL,
-    external_id VARCHAR2 (255) NOT NULL,
+    external_id VARCHAR2 (255)     NULL,
     name        VARCHAR2 (50)  NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT unique_collection UNIQUE (library_id, name)
@@ -97,9 +97,36 @@ CREATE TABLE IF NOT EXISTS collections
 CREATE TABLE IF NOT EXISTS collection_builders
 (
     id            VARCHAR2 (255) NOT NULL,
+    template_id   VARCHAR2 (255) NOT NULL,
     collection_id VARCHAR2 (255) NOT NULL,
-    builder_id    VARCHAR2 (255) NOT NULL,
+    type          VARCHAR2 (255) NOT NULL,
+    category      VARCHAR2 (255) NOT NULL,
+    name          VARCHAR2 (255) NOT NULL,
     attributes    VARCHAR2 (255) NOT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT unique_collection_builder UNIQUE (collection_id, builder_id)
+    PRIMARY KEY (id)
 );
+
+-- Media
+CREATE TABLE IF NOT EXISTS media
+(
+    id           VARCHAR2 (255) NOT NULL,
+    library_id   VARCHAR2 (255) NOT NULL,
+    external_id  VARCHAR2 (255) NOT NULL,
+    type         VARCHAR2 (50)  NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT unique_media UNIQUE (library_id, external_id, type)
+);
+
+-- Metadata
+CREATE TABLE IF NOT EXISTS metadata
+(
+    id           VARCHAR2 (255) NOT NULL,
+    reference_id VARCHAR2 (255) NOT NULL,
+    name         VARCHAR2 (255) NOT NULL,
+    val          VARCHAR2 (255) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT unique_metadata UNIQUE (reference_id, name)
+);
+
+-- media( id, lib, ratingKey(for movie), movie )
+-- metadata( id, mediaId, "title", "Changed Title" )

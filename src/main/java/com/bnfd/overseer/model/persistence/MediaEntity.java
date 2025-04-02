@@ -1,5 +1,6 @@
 package com.bnfd.overseer.model.persistence;
 
+import com.bnfd.overseer.model.constants.MediaType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import jakarta.persistence.*;
@@ -16,54 +17,39 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "libraries")
-public class LibraryEntity implements Serializable, Comparable<LibraryEntity> {
+@Table(name = "media")
+public class MediaEntity implements Serializable, Comparable<MediaEntity> {
     // region - Class Variables -
     @Id
     private String id;
 
-    @Column(name = "server_id")
-    private String serverId;
+    @Column(name = "library_id")
+    private String libraryId;
 
     @Column(name = "external_id")
     private String externalId;
 
-    private String type;
-
-    private String name;
-
-    @EqualsAndHashCode.Exclude
-    @OneToMany
-    @JoinColumn(name = "reference_id")
-    private Set<SettingEntity> settings;
+    @Enumerated(EnumType.STRING)
+    private MediaType type;
 
     @EqualsAndHashCode.Exclude
     @OneToMany
     @JoinColumn(name = "reference_id")
-    private Set<ActionEntity> actions;
-
-    @EqualsAndHashCode.Exclude
-    @OneToMany
-    @JoinColumn(name = "library_id")
-    private Set<CollectionEntity> collections;
-
-    @EqualsAndHashCode.Exclude
-    @OneToMany
-    @JoinColumn(name = "library_id")
-    private Set<MediaEntity> media;
+    private Set<MetadataEntity> metadata;
     // endregion - Class Variables -
 
     // region - Overridden Methods -
     @Override
-    public int compareTo(LibraryEntity library) {
-        return Comparator.comparing(LibraryEntity::getServerId)
-                .thenComparing(LibraryEntity::getName)
-                .compare(this, library);
+    public int compareTo(MediaEntity metadata) {
+        return Comparator.comparing(MediaEntity::getLibraryId)
+                .thenComparing(MediaEntity::getType)
+                .thenComparing(MediaEntity::getExternalId)
+                .compare(this, metadata);
     }
 
     @Override
     public final boolean equals(Object object) {
-        if (object instanceof LibraryEntity) {
+        if (object instanceof MediaEntity) {
             return EqualsBuilder.reflectionEquals(this, object);
         } else {
             return false;

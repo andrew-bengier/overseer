@@ -1,9 +1,12 @@
 package com.bnfd.overseer.model.media.plex;
 
+import com.bnfd.overseer.model.media.plex.components.Metadata;
 import jakarta.xml.bind.annotation.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.*;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -24,5 +27,11 @@ public class MediaContainer {
 
     @XmlElement(name = "Directory")
     public List<Directory> directories;
+
+    @XmlElement(name = "Video")
+    public List<Video> videos;
+
+    @XmlElement(name = "Metadata")
+    public List<Metadata> metadata;
 }
 

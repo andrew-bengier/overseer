@@ -106,8 +106,7 @@ public class ServerService {
             entity = serverRepository.save(entity);
 
             Set<SettingEntity> settingEntities = configureNewServerSettings(entity);
-            settingEntities = new HashSet<>(settingRepository.saveAll(settingEntities));
-            entity.setSettings(settingEntities);
+            entity.setSettings(new HashSet<>(settingRepository.saveAll(settingEntities)));
         } catch (PersistenceException exception) {
             throw new OverseerConflictException(exception.getMessage());
         }
@@ -179,8 +178,7 @@ public class ServerService {
         Set<SettingEntity> toSave = SettingUtils.syncSettings(serverId, server.getSettings(), requested, false);
 
         try {
-            Set<SettingEntity> entities = new HashSet<>(settingRepository.saveAll(toSave));
-            server.setSettings(entities);
+            server.setSettings(new HashSet<>(settingRepository.saveAll(toSave)));
         } catch (PersistenceException exception) {
             throw new OverseerConflictException(exception.getMessage());
         }

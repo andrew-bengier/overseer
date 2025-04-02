@@ -3,6 +3,7 @@ package com.bnfd.overseer.controller;
 import com.bnfd.overseer.model.api.Collection;
 import com.bnfd.overseer.model.api.Server;
 import com.bnfd.overseer.service.CollectionService;
+import com.bnfd.overseer.service.LibraryService;
 import com.bnfd.overseer.service.ServerService;
 import com.bnfd.overseer.service.ValidationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,14 +25,17 @@ public class CollectionController {
 
     private final ServerService serverService;
 
+    private final LibraryService libraryService;
+
     private final CollectionService collectionService;
     // endregion - Class Variables -
 
     // region - Constructors -
     @Autowired
-    public CollectionController(ValidationService validationService, ServerService serverService, CollectionService collectionService) {
+    public CollectionController(ValidationService validationService, ServerService serverService, LibraryService libraryService, CollectionService collectionService) {
         this.validationService = validationService;
         this.serverService = serverService;
+        this.libraryService = libraryService;
         this.collectionService = collectionService;
     }
     // endregion - Constructors -
@@ -58,6 +62,14 @@ public class CollectionController {
     // endregion - GET -
 
     // region - PUT -
+    @PutMapping(value = "/{collectionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> processCollection(@PathVariable String serverId, @PathVariable String libraryId, @PathVariable String collectionId) throws Throwable {
+        log.info("Processing collection - id [{}]", collectionId);
+
+
+        Server server = serverService.getServerById(serverId);
+        return new ResponseEntity<>(collectionService.processCollectionById(collectionId), HttpStatus.OK);
+    }
     // endregion - PUT -
 
     // region - PATCH -
@@ -65,4 +77,14 @@ public class CollectionController {
 
     // region - DELETE -
     // endregion - DELETE -
+
+    // [TEST]
+    @GetMapping(value = "/{collectionId}/test", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> testCollection(@PathVariable String serverId, @PathVariable String libraryId, @PathVariable String collectionId) throws Throwable {
+        log.info("Testing collection - id [{}]", collectionId);
+
+        Server server = serverService.getServerById(serverId);
+//        return new ResponseEntity<>(libraryService.getMediaContainer(server), HttpStatus.OK);
+        return new ResponseEntity<>(collectionService.getCollectionMedia(collectionId), HttpStatus.OK);
+    }
 }

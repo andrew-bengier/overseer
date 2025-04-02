@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@XmlRootElement(name = "Producer")
+@XmlRootElement(name = "Guid")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Producer {
-    @XmlAttribute(name = "tag")
-    public String tag;
+public class Guid {
+    @XmlAttribute(name = "id")
+    private String id;
 }

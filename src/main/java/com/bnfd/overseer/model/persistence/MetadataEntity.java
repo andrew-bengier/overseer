@@ -1,43 +1,51 @@
 package com.bnfd.overseer.model.persistence;
 
-import com.bnfd.overseer.model.constants.BuilderCategory;
-import com.bnfd.overseer.model.constants.BuilderType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.io.Serializable;
+import java.util.Comparator;
+
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
-@RequiredArgsConstructor
-@Table(name = "builders")
-public class BuilderEntity {
+@Table(name = "metadata")
+public class MetadataEntity implements Serializable, Comparable<MetadataEntity> {
     // region - Class Variables -
     @Id
     private String id;
 
-    @Enumerated(EnumType.STRING)
-    private BuilderType type;
-
-    @Enumerated(EnumType.STRING)
-    private BuilderCategory category;
+    @Column(name = "reference_id")
+    private String referenceId;
 
     private String name;
 
-    private String version;
+    private String val;
     // endregion - Class Variables -
 
     // region - Overridden Methods -
     @Override
+    public int compareTo(MetadataEntity metadata) {
+        return Comparator.comparing(MetadataEntity::getReferenceId)
+                .thenComparing(MetadataEntity::getName)
+                .compare(this, metadata);
+    }
+
+    @Override
     public final boolean equals(Object object) {
-        if (object instanceof BuilderEntity) {
+        if (object instanceof MetadataEntity) {
             return EqualsBuilder.reflectionEquals(this, object);
         } else {
             return false;
