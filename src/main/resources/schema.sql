@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS actions
     CONSTRAINT unique_action UNIQUE (reference_id, name)
 );
 
--- Servers
+-- Libraries
 CREATE TABLE IF NOT EXISTS servers
 (
     id         VARCHAR2 (255) NOT NULL,

@@ -20,6 +20,8 @@ spring:
   sql:
     init:
       mode: always
+  thymeleaf:
+    prefix: ./target/classes/static/
 springdoc:
   swagger-ui:
     enabled: true

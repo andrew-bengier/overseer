@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 )
 public class SwaggerController {
     @Hidden
-    @GetMapping({"/", "/docs", "/swagger", "/swagger-ui"})
+    @GetMapping({"/docs", "/swagger", "/swagger-ui"})
     public HttpEntity<Void> redirectToSwagger() {
         return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
                 .header(HttpHeaders.LOCATION, "/swagger-ui.html")
