@@ -1,0 +1,32 @@
+                           .',;;:;;,.
+                        .lOXNWWMMMMWXOo'
+                      .lKNWMMMMMMMMMMMMXo.
+..                   .oXxkWMMMMMMMMMMMMMWo
+,d,                  ,0dlXMMMMMMMMMMMMMMMO'                  .c'
+.dKl.                :klOXkooOWMMNOooOWWWO'                 :Oo.
+ .kW0:.              'odOl   .OMWx.  .dOOx.               ,kNx.
+  .xWNk,              .o0;  .okOKk;   ld;.              .oXWx.
+   .oXMNx,            cXW0xxKK;.,kNkdkXNk'            .c0WWd.
+     ;0WMNd'          .:dOXMM0l:ckWMMNOd;.          .:OWMXl.
+      .dNMMXd'          .,:xXNWWWWWXxc.           .cOWMWO,
+        ,kNMMNk:.       ,0l.:dxxxdl';Ol        .;dXWMWO:.
+          ;kNMMWKo,     '0O'.,,'.'..dX;      'lOWMMNO:.
+            ,xXMMMNkc.   :00dooc;clxKd.   .:kXMMMNx;
+              'oKWWKkxo:. .dKXXXKXXO:. .:odONMW0o'
+                .:xKKkxxxo:'..''.'',;looxxx00d;.
+         .:dc.     .:x00kxxdoo:'.':odxxk0Od;.     ..
+          ,xXl       .,dkO0kkkkxdddlldxl,.       c0O:
+    .'.    .l0l..:odxxxxl:okOOOOkkOOkxdddoc;'.  cXO;
+   ;KNd:xkOxooO0kllxkkkxxxxd;..,:cdkkkkkOkxxolcxKx,..'..,c'
+   .dOo;cllc:.,KNc'llc;,..          .';clcc;.cNKc;x00KklOMO.
+      ..       lXO;...                      .dNd. ....':oo,
+                ,okxxc.                 'oookOl.       .
+                   ..                   .,;;'.
+ ____     _   _    ______    _____
+|  _ \   | \ | |  |  ____|  |  __ \
+| |_) |  |  \| |  | |__     | |  | |
+|  _ <   | . ` |  |  __|    | |  | |
+| |_) |  | |\  |  | |       | |__| |
+|____/   |_| \_|  |_|       |_____/   Kraken Digital Industries, LLC
+====================================================================
+:: Spring Boot ::                                         ${spring-boot.formatted-version}

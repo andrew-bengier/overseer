@@ -1,23 +1,38 @@
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, loggers, logfile, metrics, mappings, scheduledtasks
-  info:
-    git:
-      mode: full
-      enabled: 'true'
-  endpoint:
-    health:
-      show-details: always
-    loggers:
-      enabled: 'true'
-info:
-  app:
-    version: '@project.version@'
-    name: '@project.name@'
 spring:
   application:
-      name: Overseer
+    name: Overseer
   banner:
     location: classpath:banner.txt
+  datasource:
+    url: ${DB_URL}${DB_NAME_LOCATION}${DB_PARAMS}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driverClassName: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  log:
+    file:
+      location: "logs/OverseerApi"
+  request:
+    timeout: 2000
+    connection:
+      timeout: 200
+      pool:
+        route:
+          max: 512
+        max: 64
+    pool:
+      timeout: 200
+  sql:
+    init:
+      mode: always
+springdoc:
+  swagger-ui:
+    enabled: true

@@ -1,5 +1,3 @@
-# Ignore following files/patterns for GIT
-
 ### IntelliJ IDEA ###
 .idea
 *.iws
@@ -18,5 +16,24 @@
 .springBeans
 .sts4-cache
 
-src/main/resources/git.properties
+# misc
+.DS_Store
+
+# dependencies
+/ui/node/
+/ui/node_modules/
+
+# testing
+/ui/coverage
+/ui/npm-debug.log*
+
+# production
+/dest
+/build/release/
+/build/build_app.xml
 target/
+/data/
+
+# local
+src/main/resources/git.properties
+/local-api.env
