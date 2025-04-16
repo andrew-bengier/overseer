@@ -32,7 +32,9 @@
         <!-- region - Versions - -->
         <java.version>21</java.version>
 
+        <apache.commons.io.version>2.19.0</apache.commons.io.version>
         <apache.commons.lang3.version>3.17.0</apache.commons.lang3.version>
+        <apache.httpcomponents.client5.version>5.4.3</apache.httpcomponents.client5.version>
 
         <commons.validator.version>1.9.0</commons.validator.version>
         <cron.utils.version>9.2.1</cron.utils.version>
@@ -41,9 +43,12 @@
 
         <git.info.version>4.9.10</git.info.version>
         <google.gson.version>2.11.0</google.gson.version>
+        <google.gson.java-extension.version>1.1.2</google.gson.java-extension.version>
 
         <jackson.data.yaml.version>2.18.2</jackson.data.yaml.version>
         <jakarta.xml.bind.version>4.0.2</jakarta.xml.bind.version>
+
+        <logstash.logback.encoder.version>8.1</logstash.logback.encoder.version>
 
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <maven.failsafe.version>3.5.2</maven.failsafe.version>
@@ -60,6 +65,8 @@
         <springboot.maven.plugin.version>3.4.1</springboot.maven.plugin.version>
         <springdoc.openapi.version>2.8.5</springdoc.openapi.version>
         <swagger.io.version>2.2.28</swagger.io.version>
+
+        <vavr.version>0.10.6</vavr.version>
 
         <web.api.plex.version>0.11.1</web.api.plex.version>
         <web.api.tmdb.version>2.3.1</web.api.tmdb.version>
@@ -295,9 +302,19 @@
 
         <!--  region - Apache - -->
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${apache.commons.io.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${apache.commons.lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>${apache.httpcomponents.client5.version}</version>
         </dependency>
         <!--  endregion - Apache - -->
 
@@ -337,6 +354,13 @@
             <artifactId>gson</artifactId>
             <version>${google.gson.version}</version>
         </dependency>
+
+        <!--  NOTE: this is an extension to google gson - to support java 8+ entities ( time ) -->
+        <dependency>
+            <groupId>com.fatboyindustrial.gson-javatime-serialisers</groupId>
+            <artifactId>gson-javatime-serialisers</artifactId>
+            <version>${google.gson.java-extension.version}</version>
+        </dependency>
         <!-- endregion - Google - -->
 
         <!-- region - Jackson - -->
@@ -354,6 +378,14 @@
             <version>${jakarta.xml.bind.version}</version>
         </dependency>
         <!-- endregion - Jakarta - -->
+
+        <!-- region - Logstash - -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash.logback.encoder.version}</version>
+        </dependency>
+        <!-- region - Logstash - -->
 
         <!-- region - Lombok - -->
         <dependency>
@@ -382,6 +414,14 @@
             <scope>test</scope>
         </dependency>
         <!-- endregion - Testing - -->
+
+        <!-- region - Vavr - -->
+        <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+            <version>${vavr.version}</version>
+        </dependency>
+        <!-- endregion - Vavr - -->
 
         <!-- region - Web Apis - -->
         <!-- region - Plex - -->

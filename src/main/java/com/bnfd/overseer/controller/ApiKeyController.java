@@ -28,7 +28,6 @@ import java.util.Map;
 @RestController
 @Tag(name = "ApiKey Endpoints")
 @RequestMapping("api/apikeys")
-@CrossOrigin(origins = "http://localhost:3000")
 public class ApiKeyController {
     // region - Class Variables -
     private final ValidationService validationService;

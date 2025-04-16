@@ -1,23 +1,16 @@
 import React from "react";
-import {getApiInfo} from "../../../services/InfoService";
+import BlockSection from "../../../components/layouts/sections/BlockSection";
+import LoggingSettingsForm from "../../../components/forms/logging/LoggingSettingsForm";
 
 function General() {
 
-    React.useEffect(() => {
-        const fetchInfo = async () => {
-            await getApiInfo().then(
-                response => {
-                    console.log(response);
-                }
-            )
-        };
-
-        fetchInfo().then();
-    }, []);
-
     return (
         <React.Fragment>
-            General
+            <BlockSection
+                header={formatMessage({id: 'src.routes.settings.logging.loggingSettingsSectionTitle'})}
+                width="60%"
+                content={<LoggingSettingsForm/>}
+            />
         </React.Fragment>
     )
 }

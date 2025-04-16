@@ -23,3 +23,9 @@ export const timeFormats = [
     "H:mm a",
     "HH:mm"
 ];
+
+export const viewableFileExtensions = [
+    "json",
+    "txt",
+    "out"
+];

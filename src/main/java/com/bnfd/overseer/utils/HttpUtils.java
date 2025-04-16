@@ -13,7 +13,9 @@ public class HttpUtils {
     private static final String ADD = "&";
     private static final String QUERY = "?";
 
-    public static StringBuilder generateUrl(StringBuilder url, Map<String, String> requestParams, List<String> paramsToInvert) throws UnsupportedEncodingException {
+    public static final String URL_SEPARATOR = "/";
+
+    public static StringBuilder generateUrlWithParams(StringBuilder url, Map<String, String> requestParams, List<String> paramsToInvert) throws UnsupportedEncodingException {
         if (MapUtils.isNotEmpty(requestParams)) {
             for (Map.Entry<String, String> param : requestParams.entrySet()) {
                 if (StringUtils.isNotBlank(param.getValue())) {
@@ -24,6 +26,19 @@ public class HttpUtils {
                         url.append(QUERY).append(param.getKey()).append(operator).append(param.getValue());
                     }
                 }
+            }
+        }
+
+        return url;
+    }
+
+    public static StringBuilder generateUrl(String... pathPieces) {
+        StringBuilder url = new StringBuilder();
+        for (String pathPiece : pathPieces) {
+            if (StringUtils.isBlank(url.toString()) || url.toString().endsWith(URL_SEPARATOR)) {
+                url.append(pathPiece);
+            } else {
+                url.append(URL_SEPARATOR).append(pathPiece);
             }
         }
 

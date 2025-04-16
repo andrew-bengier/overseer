@@ -1,14 +1,18 @@
 package com.bnfd.overseer.exception;
 
-import com.google.gson.*;
-import org.springframework.http.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.springframework.http.HttpStatus;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * OverseerNoContentException - HttpStatus.NO_CONTENT.
  */
-public class OverseerNoContentException extends RuntimeException {
+public class OverseerNoContentException extends OverseerException {
     // region - Class Variables -
     private static final HttpStatus statusCode = HttpStatus.NO_CONTENT;
 
@@ -25,7 +29,7 @@ public class OverseerNoContentException extends RuntimeException {
     public OverseerNoContentException(String message) {
         super(message);
 
-        this.errors = Collections.emptyList();
+        errors = Collections.emptyList();
     }
 
     public OverseerNoContentException(String message, List<String> errors) {
@@ -37,7 +41,7 @@ public class OverseerNoContentException extends RuntimeException {
     public OverseerNoContentException(String message, Throwable throwable) {
         super(message, throwable);
 
-        this.errors = Collections.emptyList();
+        errors = Collections.emptyList();
     }
     // endregion - Constructors -
 

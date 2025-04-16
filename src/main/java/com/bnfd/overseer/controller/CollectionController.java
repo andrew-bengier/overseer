@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "Collection Endpoints")
 @RequestMapping("api/servers/{serverId}/libraries/{libraryId}/collections")
-@CrossOrigin(origins = "http://localhost:3000")
 public class CollectionController {
     // region - Class Variables -
     private final ValidationService validationService;

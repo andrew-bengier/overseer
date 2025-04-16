@@ -1,5 +1,5 @@
 import {createTheme} from '@mui/material/styles';
-import {red} from '@mui/material/colors';
+import {lightBlue, red} from '@mui/material/colors';
 
 // Custom light theme
 const LightTheme = createTheme({
@@ -10,8 +10,15 @@ const LightTheme = createTheme({
         secondary: {
             main: '#6780C5'
         },
+        info: {
+            main: lightBlue.A100,
+            light: "#d9f3ff"
+        },
         error: {
             main: red.A400
+        },
+        text: {
+            grey: '#91a1ab'
         },
         background: "white"
     },

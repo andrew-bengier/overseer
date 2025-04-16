@@ -52,7 +52,6 @@ public class LibraryService {
 
     // region - Constructors -
     @Autowired
-
     public LibraryService(@Qualifier("overseer-mapper") ModelMapper overseerMapper,
                           LibraryRepository libraryRepository,
                           SettingRepository settingRepository,

@@ -176,13 +176,14 @@ public class PlexMediaServerApiService implements MediaServerApiService {
     // endregion - Media -
 
     // region - Protected Methods -
+    // TODO: update this to use RestTemplate
     public MediaContainer plexConnection(String apiUrl, String token, Map<String, String> params, List<String> removalParams, HttpMethod httpMethod) throws IOException, JAXBException, URISyntaxException {
         StringBuilder request = new StringBuilder();
         request.append(apiUrl)
                 .append(PLEX_TOKEN_PARAM)
                 .append(token);
 
-        String requestUrl = HttpUtils.generateUrl(request, params, removalParams).toString();
+        String requestUrl = HttpUtils.generateUrlWithParams(request, params, removalParams).toString();
 
         URL url = new URI(requestUrl).toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();

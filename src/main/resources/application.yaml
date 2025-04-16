@@ -17,11 +17,22 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  log:
+    file:
+      location: "logs/OverseerApi"
+  request:
+    timeout: 2000
+    connection:
+      timeout: 200
+      pool:
+        route:
+          max: 512
+        max: 64
+    pool:
+      timeout: 200
   sql:
     init:
       mode: always
-  thymeleaf:
-    prefix: ./target/classes/static/
 springdoc:
   swagger-ui:
     enabled: true

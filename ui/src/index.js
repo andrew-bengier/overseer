@@ -8,15 +8,18 @@ import reportWebVitals from './reportWebVitals';
 
 import ContentIntlProvider from "./providers/ContentIntlProvider";
 import LocalProvider from "./providers/LocalizationProvider";
+import {BrowserRouter} from "react-router-dom";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
-        <ContentIntlProvider>
-            <LocalProvider>
-                <App/>
-            </LocalProvider>
-        </ContentIntlProvider>
+        <BrowserRouter>
+            <ContentIntlProvider>
+                <LocalProvider>
+                    <App/>
+                </LocalProvider>
+            </ContentIntlProvider>
+        </BrowserRouter>
     </React.StrictMode>
 );
 

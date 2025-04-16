@@ -152,3 +152,19 @@ builders
 - myanimelist
 
 filters
+
+naming conventions (files and assets):
+rename checkmark
+replace illegal chars
+colon replacement
+standard movie format
+standard episode format
+daily episode format
+anime episode format
+season folder format
+multi episode style
+unmonitor / delete
+paths
+
+runtime format (full min, or hour/min)
+show relative dates (alt absolute)

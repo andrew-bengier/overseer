@@ -1,14 +1,18 @@
 package com.bnfd.overseer.exception;
 
-import com.google.gson.*;
-import org.springframework.http.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.springframework.http.HttpStatus;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * OverseerNotFoundException - HttpStatus.NOT_FOUND.
  */
-public class OverseerNotFoundException extends RuntimeException {
+public class OverseerNotFoundException extends OverseerException {
     // region - Class Variables -
     private static final HttpStatus statusCode = HttpStatus.NOT_FOUND;
 
@@ -25,7 +29,7 @@ public class OverseerNotFoundException extends RuntimeException {
     public OverseerNotFoundException(String message) {
         super(message);
 
-        this.errors = Collections.emptyList();
+        errors = Collections.emptyList();
     }
 
     public OverseerNotFoundException(String message, List<String> errors) {
@@ -37,7 +41,7 @@ public class OverseerNotFoundException extends RuntimeException {
     public OverseerNotFoundException(String message, Throwable throwable) {
         super(message, throwable);
 
-        this.errors = Collections.emptyList();
+        errors = Collections.emptyList();
     }
     // endregion - Constructors -
 

@@ -11,4 +11,9 @@ export default defineMessages({
         id: 'src.routes.settings.dates.datesSettingsSectionTitle',
         description: 'Title for the calendar section form'
     },
+    loggingSettingsSectionTitle: {
+        defaultMessage: 'Logging',
+        id: 'src.routes.settings.logging.loggingSettingsSectionTitle',
+        description: 'Title for the logging section form'
+    },
 });

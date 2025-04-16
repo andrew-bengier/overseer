@@ -19,7 +19,6 @@ import java.util.Map;
 @RestController
 @Tag(name = "Lookup Endpoints")
 @RequestMapping("api/lookups")
-@CrossOrigin(origins = "http://localhost:3000")
 public class LookupController {
     // region - Class Variables -
     private final LookupService lookupService;

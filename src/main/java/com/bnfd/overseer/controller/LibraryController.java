@@ -17,7 +17,6 @@ import java.util.List;
 @RestController
 @Tag(name = "Library Endpoints")
 @RequestMapping("api/servers/{serverId}/libraries")
-@CrossOrigin(origins = "http://localhost:3000")
 public class LibraryController {
     // region - Class Variables -
     private final ValidationService validationService;

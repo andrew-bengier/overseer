@@ -38,6 +38,14 @@ function SelectFormField({
         }
     }, [value, options]);
 
+    function optionObject(option, field) {
+        if (option instanceof Object) {
+            return option[field] ? option[field] : option;
+        } else {
+            return option;
+        }
+    }
+
     function handleInputChange(event) {
         setSelected(event.target.value);
         handleChange(id, event.target.value)
@@ -70,10 +78,10 @@ function SelectFormField({
                 >
                     {selectOptions.map((option) => (
                         <MenuItem
-                            key={option}
-                            value={option}
+                            key={optionObject(option, 'key')}
+                            value={optionObject(option, 'value')}
                         >
-                            {option}
+                            {optionObject(option, 'display')}
                         </MenuItem>
                     ))}
                 </Select>
@@ -102,7 +110,7 @@ function SelectFormField({
                     renderValue={(selected) => (
                         <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
                             {selected.map((value) => (
-                                <Chip key={value} label={value}/>
+                                <Chip key={optionObject(value, 'key')} label={optionObject(value, 'display')}/>
                             ))}
                         </Box>
                     )}
@@ -110,10 +118,10 @@ function SelectFormField({
                 >
                     {selectOptions.map((option) => (
                         <MenuItem
-                            key={option}
-                            value={option}
+                            key={optionObject(option, 'key')}
+                            value={optionObject(option, 'value')}
                         >
-                            {option}
+                            {optionObject(option, 'display')}
                         </MenuItem>
                     ))}
                 </Select>
@@ -137,10 +145,10 @@ function SelectFormField({
             >
                 {selectOptions.map((option) => (
                     <MenuItem
-                        key={option}
-                        value={option}
+                        key={optionObject(option, 'key')}
+                        value={optionObject(option, 'value')}
                     >
-                        {option}
+                        {optionObject(option, 'display')}
                     </MenuItem>
                 ))}
             </Select>
@@ -164,7 +172,7 @@ function SelectFormField({
                 renderValue={(selected) => (
                     <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
                         {selected.map((value) => (
-                            <Chip key={value} label={value}/>
+                            <Chip key={optionObject(value, 'key')} label={optionObject(value, 'display')}/>
                         ))}
                     </Box>
                 )}
@@ -172,10 +180,10 @@ function SelectFormField({
             >
                 {selectOptions.map((option) => (
                     <MenuItem
-                        key={option}
-                        value={option}
+                        key={optionObject(option, 'key')}
+                        value={optionObject(option, 'value')}
                     >
-                        {option}
+                        {optionObject(option, 'display')}
                     </MenuItem>
                 ))}
             </Select>

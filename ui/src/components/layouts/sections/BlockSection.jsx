@@ -2,12 +2,11 @@ import React from "react";
 import {Card, CardContent, CardHeader, Divider} from "@mui/material";
 import PropTypes from "prop-types";
 
-function SettingsSection({header, content}) {
+function BlockSection({header, content, width = '100%'}) {
     return (
         <Card
             component="section"
             elevation={0}
-            sx={{}}
         >
             <CardHeader
                 title={header}
@@ -24,7 +23,7 @@ function SettingsSection({header, content}) {
                 sx={{
                     paddingTop: '10px',
                     paddingLeft: '5%',
-                    width: '60%'
+                    width: width
                 }}
             >
                 {content}
@@ -33,7 +32,7 @@ function SettingsSection({header, content}) {
     );
 }
 
-SettingsSection.propTypes = {
+BlockSection.propTypes = {
     header: PropTypes.string.isRequired,
     content: PropTypes.oneOfType([
         PropTypes.arrayOf(PropTypes.element),
@@ -41,4 +40,4 @@ SettingsSection.propTypes = {
     ]).isRequired
 }
 
-export default SettingsSection;
+export default BlockSection;

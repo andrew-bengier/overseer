@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "Server Endpoints")
 @RequestMapping("api/servers")
-@CrossOrigin(origins = "http://localhost:3000")
 public class ServerController {
     // region - Class Variables -
     private final ValidationService validationService;
