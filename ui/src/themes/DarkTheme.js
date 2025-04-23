@@ -9,7 +9,8 @@ const DarkTheme = createTheme({
             main: '#67C5AC'
         },
         secondary: {
-            main: '#6780C5'
+            main: '#6780C5',
+            light: '#98b1eb'
         },
         info: {
             main: lightBlue.A200,
@@ -21,6 +22,10 @@ const DarkTheme = createTheme({
         text: {
             // grey: '#808080'
             grey: '#91a1ab'
+        },
+        infoCard: {
+            main: '#d1d1d1',
+            text: "black"
         },
         background: "black",
     },

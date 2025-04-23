@@ -27,9 +27,12 @@
         <property name="app.name" value="OverseerApi"/>
         <property name="app.log.dir" value="logs/${app.name}"/>
         <property name="app.log.file" value="${app.log.dir}/${app.name}_log.out"/>
+        <property name="app.log.event.file" value="${app.log.dir}/${app.name}_event_log.out"/>
         <property name="app.log.jsonfile" value="${app.log.dir}/${app.name}_log.json"/>
         <property name="app.log.rollover.dir" value="${app.log.dir}/%d{yyyy-MM}"/>
         <property name="app.log.rollover.file" value="${app.log.rollover.dir}/log-%d{MM-dd-yyyy}-%i.out.gz"/>
+        <property name="app.log.rollover.event.file"
+                  value="${app.log.rollover.dir}/log-%d{MM-dd-yyyy}-event-%i.out.gz"/>
         <property name="app.log.rollover.jsonfile" value="${app.log.rollover.dir}/log-%d{MM-dd-yyyy}-%i.json.gz"/>
         <property name="log.pattern"
                   value="%d{yyyy-MM-dd'T'HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} [${app.name}][%X{endpointPath}][%X{userId}] %m%n"/>
@@ -40,9 +43,9 @@
                 <fileNamePattern>${app.log.rollover.jsonfile}</fileNamePattern>
                 <maxFileSize>10MB</maxFileSize>
                 <totalSizeCap>1GB</totalSizeCap>
-                <maxHistory>30</maxHistory>
+                <maxHistory>60</maxHistory>
             </rollingPolicy>
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+            <encoder class="ch.qos.logback.classic.encoder.JsonEncoder"/>
         </appender>
 
         <appender name="LOGFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -51,7 +54,21 @@
                 <fileNamePattern>${app.log.rollover.file}</fileNamePattern>
                 <maxFileSize>10MB</maxFileSize>
                 <totalSizeCap>1GB</totalSizeCap>
-                <maxHistory>30</maxHistory>
+                <maxHistory>60</maxHistory>
+            </rollingPolicy>
+            <encoder>
+                <charset>UTF-8</charset>
+                <pattern>${log.pattern}</pattern>
+            </encoder>
+        </appender>
+
+        <appender name="EVENTFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${app.log.event.file}</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${app.log.rollover.event.file}</fileNamePattern>
+                <maxFileSize>10MB</maxFileSize>
+                <totalSizeCap>1GB</totalSizeCap>
+                <maxHistory>60</maxHistory>
             </rollingPolicy>
             <encoder>
                 <charset>UTF-8</charset>
@@ -70,6 +87,13 @@
         <logger name="com.bnfd.common" level="INFO"/>
         <logger name="com.bnfd.overseer" level="INFO"/>
         <logger name="com.bnfd.overseer.service" level="INFO"/>
+        <!-- TODO: add event logger with separate file-->
+        <!-- <logger name="com.bnfd.overseer.service.events" level="DEBUG"> -->
+        <!--    <appender-ref ref="EVENTFILE"/>                               -->
+        <!--    <appender-ref ref="JSONFILE"/>                               -->
+        <!--    <appender-ref ref="LOGFILE"/>                               -->
+        <!--    <appender-ref ref="STDOUT"/>                                -->
+        <!-- </logger>                                                      -->
 
         <root level="INFO">
             <appender-ref ref="JSONFILE"/>

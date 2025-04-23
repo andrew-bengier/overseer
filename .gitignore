@@ -28,6 +28,7 @@
 /ui/npm-debug.log*
 
 # production
+/logs
 /dest
 /build/release/
 /build/build_app.xml

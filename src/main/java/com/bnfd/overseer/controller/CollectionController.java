@@ -1,6 +1,7 @@
 package com.bnfd.overseer.controller;
 
 import com.bnfd.overseer.model.api.Collection;
+import com.bnfd.overseer.model.api.Library;
 import com.bnfd.overseer.model.api.Server;
 import com.bnfd.overseer.service.CollectionService;
 import com.bnfd.overseer.service.LibraryService;
@@ -13,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -52,6 +55,15 @@ public class CollectionController {
     // endregion - POST -
 
     // region - GET -
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCollections(@PathVariable String serverId, @PathVariable String libraryId, @RequestParam Map<String, String> options) throws Throwable {
+        log.info("Retrieving collections with options: [{}]", options.toString());
+
+        Server server = serverService.getServerById(serverId);
+        Library library = libraryService.getLibraryById(libraryId);
+        return new ResponseEntity<>(collectionService.getCollections(server, library, options), HttpStatus.OK);
+    }
+
     @GetMapping(value = "/{collectionId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getCollectionById(@PathVariable String serverId, @PathVariable String libraryId, @PathVariable String collectionId) throws Throwable {
         log.info("Retrieving collection - id [{}]", collectionId);

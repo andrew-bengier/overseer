@@ -1,10 +1,12 @@
 package com.bnfd.overseer.model.media.plex;
 
-import com.bnfd.overseer.model.media.plex.components.*;
+import com.bnfd.overseer.model.media.plex.components.Genre;
 import jakarta.xml.bind.annotation.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.*;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -21,6 +23,8 @@ public class Directory {
     public String art;
     @XmlAttribute(name = "key")
     public String key;
+    @XmlAttribute(name = "ratingKey")
+    public String ratingKey;
     @XmlAttribute(name = "type")
     public String type;
     @XmlAttribute(name = "title")

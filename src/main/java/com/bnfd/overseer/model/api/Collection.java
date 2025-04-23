@@ -28,6 +28,8 @@ public class Collection implements Serializable, Comparable<Collection> {
     private Set<Setting> settings;
     @Schema(name = "actions", implementation = Action.class, description = "Library Actions")
     private Set<Action> actions;
+
+    private Set<Media> media;
     // endregion - Class Variables -
 
     // region - Constructors -
@@ -138,6 +140,14 @@ public class Collection implements Serializable, Comparable<Collection> {
         if (CollectionUtils.isNotEmpty(actions)) {
             actions.remove(action);
         }
+    }
+
+    public Set<Media> getMedia() {
+        return media;
+    }
+
+    public void setMedia(Set<Media> media) {
+        this.media = media;
     }
     // endregion - Accessor Methods -
 

@@ -1,5 +1,7 @@
 package com.bnfd.overseer.model.persistence;
 
+import com.bnfd.overseer.model.api.Media;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import jakarta.persistence.*;
@@ -9,6 +11,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -16,6 +19,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Table(name = "collections")
 public class CollectionEntity implements Serializable, Comparable<CollectionEntity> {
     // region - Class Variables -
@@ -44,6 +48,9 @@ public class CollectionEntity implements Serializable, Comparable<CollectionEnti
     @JoinColumn(name = "collection_id")
     @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<CollectionBuilderEntity> builders;
+
+    @Transient
+    private List<Media> media;
     // endregion - Class Variables -
 
     // region - Constructors -

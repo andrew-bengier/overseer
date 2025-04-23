@@ -10,6 +10,7 @@ import DvrIcon from '@mui/icons-material/Dvr';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import ApiOutlinedIcon from '@mui/icons-material/ApiOutlined';
 import DisplaySettingsOutlinedIcon from '@mui/icons-material/DisplaySettingsOutlined';
+import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 import Settings from "./Settings/Settings";
 import Test from "./Test/Test";
 import General from "./Settings/subRoutes/General";
@@ -20,6 +21,7 @@ import Tasks from "./System/subRoutes/Tasks";
 import Logs from "./System/subRoutes/Logs";
 import Events from "./System/subRoutes/Events";
 import Apis from "./Settings/subRoutes/Apis";
+import Servers from "./Servers/Servers";
 
 export const navRoute = PropTypes.shape({
     name: PropTypes.string.isRequired,
@@ -46,6 +48,14 @@ const AppRoutes = [
         description: 'Test',
         component: Test,
         icon: BugReportIcon,
+        standardNav: true,
+        subRoutes: []
+    }, {
+        name: 'Servers',
+        key: 'Servers',
+        description: 'Servers',
+        component: Servers,
+        icon: StorageOutlinedIcon,
         standardNav: true,
         subRoutes: []
     },

@@ -2,9 +2,11 @@ package com.bnfd.overseer.model.media.plex.components;
 
 
 import jakarta.xml.bind.annotation.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.*;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -14,6 +16,8 @@ import java.util.*;
 public class Metadata {
     @XmlAttribute(name = "key")
     public String key;
+    @XmlAttribute(name = "ratingKey")
+    public String ratingKey;
     @XmlAttribute(name = "studio")
     public String studio;
     @XmlAttribute(name = "type")

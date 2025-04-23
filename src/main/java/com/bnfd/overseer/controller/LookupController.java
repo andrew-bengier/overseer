@@ -34,13 +34,6 @@ public class LookupController {
     // endregion - Constructors -
 
     // region - GET -
-    @GetMapping(path = "/builders/options", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getBuilderOptions() {
-        log.info("Retrieving builder options");
-
-        return new ResponseEntity<>(lookupService.getAllBuilderOptions(), HttpStatus.OK);
-    }
-
     @GetMapping(path = "/settings/defaults", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getDefaultSettings(@RequestParam(required = false) SettingLevel level) {
         if (level == null) {
@@ -52,12 +45,14 @@ public class LookupController {
         }
     }
 
-    // region - Constant / Enums -
-    @GetMapping("/apikeys/types")
-    public ResponseEntity<?> getApiKeyTypes() {
-        return new ResponseEntity<>(ApiKeyType.values(), HttpStatus.OK);
+    @GetMapping(path = "/builders/options", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getBuilderOptions() {
+        log.info("Retrieving builder options");
+
+        return new ResponseEntity<>(lookupService.getAllBuilderOptions(), HttpStatus.OK);
     }
 
+    // region - Constant / Enums -
     @GetMapping("/actions/categories")
     public ResponseEntity<?> getActionCategories() {
         return new ResponseEntity<>(ActionCategory.values(), HttpStatus.OK);
@@ -68,6 +63,11 @@ public class LookupController {
         return new ResponseEntity<>(ActionType.values(), HttpStatus.OK);
     }
 
+    @GetMapping("/apikeys/types")
+    public ResponseEntity<?> getApiKeyTypes() {
+        return new ResponseEntity<>(ApiKeyType.values(), HttpStatus.OK);
+    }
+
     @GetMapping("/builders/categories")
     public ResponseEntity<?> getBuilderCategories() {
         return new ResponseEntity<>(BuilderCategory.values(), HttpStatus.OK);
@@ -76,6 +76,31 @@ public class LookupController {
     @GetMapping("/builders/types")
     public ResponseEntity<?> getBuilderTypes() {
         return new ResponseEntity<>(BuilderType.values(), HttpStatus.OK);
+    }
+
+    @GetMapping("/collections/trackingTypes")
+    public ResponseEntity<?> getCollectionTrackingTypes() {
+        return new ResponseEntity<>(CollectionTrackingType.values(), HttpStatus.OK);
+    }
+
+    @GetMapping("/media/types")
+    public ResponseEntity<?> getMediaTypes() {
+        return new ResponseEntity<>(com.bnfd.overseer.model.constants.MediaType.values(), HttpStatus.OK);
+    }
+
+    @GetMapping("/mediaIds/types")
+    public ResponseEntity<?> getMediaIdTypes() {
+        return new ResponseEntity<>(MediaIdType.values(), HttpStatus.OK);
+    }
+
+    @GetMapping("/mediaImages/types")
+    public ResponseEntity<?> getMediaImageTypes() {
+        return new ResponseEntity<>(MediaImageType.values(), HttpStatus.OK);
+    }
+
+    @GetMapping("/settings/levels")
+    public ResponseEntity<?> getSettingLevels() {
+        return new ResponseEntity<>(SettingLevel.values(), HttpStatus.OK);
     }
 
     @GetMapping("/settings/types")

@@ -23,7 +23,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.*;
 import java.util.*;
@@ -65,7 +67,7 @@ public class PlexMediaServerApiService implements MediaServerApiService {
 
     // region - Collections -
     // TODO: reference here to get collections and tell if tracked or not - by ratingKey = externalId
-    public List<CollectionEntity> getCollections(ApiKeyEntity apiKey, String libraryId) {
+    public List<CollectionEntity> getCollections(ApiKeyEntity apiKey, String libraryId, boolean includeMedia) {
         StringBuilder requestUrl = new StringBuilder();
         requestUrl.append(apiKey.getUrl())
                 .append(PLEX_LIBRARY_COLLECTIONS_URL.replace("{referenceId}", libraryId));
@@ -74,10 +76,70 @@ public class PlexMediaServerApiService implements MediaServerApiService {
             MediaContainer mediaContainer = plexConnection(requestUrl.toString(), apiKey.getKey(), Collections.emptyMap(), Collections.emptyList(), HttpMethod.GET);
 
             // TODO: directory to collection, then get videos for each and convert to media (builder custom if not tracked)
-            return null;
+
+            if (CollectionUtils.isEmpty(mediaContainer.getDirectories())) {
+                return Collections.emptyList();
+            } else {
+                if (includeMedia) {
+                    List<CollectionEntity> collections = new ArrayList<>();
+                    // Temp: limit 10 collections here
+                    // TODO: add pagination
+                    for (int d = 0; d < mediaContainer.getDirectories().size() && d < 10; d++) {
+//                    for (Directory directory : mediaContainer.getDirectories()) {
+                        collections.add(getCollection(apiKey, libraryId, mediaContainer.getDirectories().get(d).getRatingKey(), true));
+                    }
+
+                    return collections;
+                } else {
+                    return overseerMapper.map(mediaContainer.getDirectories(), new TypeToken<List<CollectionEntity>>() {
+                    }.getType());
+                }
+            }
         } catch (IOException | JAXBException | URISyntaxException exception) {
             log.error(exception.getMessage());
             return Collections.emptyList();
+        }
+    }
+
+    public CollectionEntity getCollection(ApiKeyEntity apiKey, String libraryId, String collectionId, boolean includeMedia) {
+        StringBuilder requestUrl = new StringBuilder();
+        requestUrl.append(apiKey.getUrl())
+                .append(PLEX_COLLECTIONS_URL.replace("{referenceId}", collectionId));
+
+        try {
+            MediaContainer mediaContainer = plexConnection(requestUrl.toString(), apiKey.getKey(), Collections.emptyMap(), Collections.emptyList(), HttpMethod.GET);
+
+            // TODO: directory to collection, then get videos for each and convert to media (builder custom if not tracked)
+            if (mediaContainer != null && mediaContainer.getDirectories() != null) {
+                CollectionEntity collection = overseerMapper.map(mediaContainer.getDirectories().getFirst(), new TypeToken<CollectionEntity>() {
+                }.getType());
+
+                if (includeMedia) {
+                    List<Media> media = getMediaFromCollection(apiKey, collection);
+//                    media.forEach(item -> {
+//                        Optional<Metadata> thumb = item.getMetadata().stream().filter(metadata -> metadata.getName().equalsIgnoreCase(MediaImageType.THUMB.name())).findFirst();
+//                        if (thumb.isPresent()) {
+//                            try {
+//                                byte[] poster = plexConnectionForImages(apiKey.getUrl() + thumb.get().getValue(), apiKey.getKey(), HttpMethod.GET);
+//                                item.addMetadata(new Metadata(null, "poster", Base64.getEncoder().encodeToString(poster)));
+//                            } catch (IOException | JAXBException | URISyntaxException exception) {
+//                                // TODO: proper error handling here
+//                                throw new RuntimeException("Error accessing plex api image - " + exception.getLocalizedMessage());
+//                            }
+//                        }
+//                    });
+
+                    collection.setMedia(media);
+                }
+
+                return collection;
+            } else {
+                return null;
+            }
+        } catch (IOException | JAXBException | URISyntaxException exception) {
+            // TODO: proper error handling here
+            log.error(exception.getMessage());
+            return null;
         }
     }
 
@@ -173,6 +235,32 @@ public class PlexMediaServerApiService implements MediaServerApiService {
             return null;
         }
     }
+
+    public List<Media> getMediaFromCollection(ApiKeyEntity apiKey, CollectionEntity collection) {
+        StringBuilder requestUrl = new StringBuilder();
+        requestUrl.append(apiKey.getUrl())
+                .append(PLEX_COLLECTIONS_URL.replace("{referenceId}", collection.getExternalId()))
+                .append(PLEX_INCLUDE_CHILDREN_URL);
+
+        try {
+            MediaContainer mediaContainer = plexConnection(requestUrl.toString(), apiKey.getKey(), Collections.emptyMap(), Collections.emptyList(), HttpMethod.GET);
+
+            // TODO: directory to collection, then get videos for each and convert to media (builder custom if not tracked)
+            if (mediaContainer != null && mediaContainer.getMetadata() != null) {
+                return overseerMapper.map(mediaContainer.getMetadata(), new TypeToken<List<Media>>() {
+                }.getType());
+            } else if (mediaContainer != null && mediaContainer.getVideos() != null) {
+                return overseerMapper.map(mediaContainer.getVideos(), new TypeToken<List<Media>>() {
+                }.getType());
+            } else {
+                return null;
+            }
+        } catch (IOException | JAXBException | URISyntaxException exception) {
+            // TODO: proper error handling here
+            log.error(exception.getMessage());
+            return null;
+        }
+    }
     // endregion - Media -
 
     // region - Protected Methods -
@@ -191,6 +279,7 @@ public class PlexMediaServerApiService implements MediaServerApiService {
         connection.connect();
 
         if (connection.getResponseCode() != HttpStatus.OK.value()) {
+            // TODO: proper error handling here
             throw new RuntimeException("Error accessing plex api - " + connection.getResponseMessage());
         }
 
@@ -208,6 +297,44 @@ public class PlexMediaServerApiService implements MediaServerApiService {
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
             return (MediaContainer) jaxbUnmarshaller.unmarshal(new StringReader(responseText.toString()));
+        } else {
+            return null;
+        }
+    }
+
+    public byte[] plexConnectionForImages(String apiUrl, String token, HttpMethod httpMethod) throws IOException, JAXBException, URISyntaxException {
+        StringBuilder request = new StringBuilder();
+        request.append(apiUrl)
+                .append(PLEX_TOKEN_PARAM)
+                .append(token);
+
+        String requestUrl = HttpUtils.generateUrlWithParams(request, Collections.emptyMap(), Collections.emptyList()).toString();
+
+        URL url = new URI(requestUrl).toURL();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        configureConnection(connection, httpMethod.name());
+        connection.connect();
+
+        if (connection.getResponseCode() != HttpStatus.OK.value()) {
+            // TODO: proper error handling here
+            throw new RuntimeException("Error accessing plex api - " + connection.getResponseMessage());
+        }
+
+        if (httpMethod == HttpMethod.GET) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            try (InputStream inputStream = url.openStream()) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+
+                while ((bytesRead = inputStream.read(buffer)) > 0) {
+                    byteArrayOutputStream.write(buffer, 0, bytesRead);
+                }
+
+                return byteArrayOutputStream.toByteArray();
+            } catch (IOException exception) {
+                // TODO: proper error handling here
+                throw new RuntimeException("Error accessing plex api - " + connection.getResponseMessage());
+            }
         } else {
             return null;
         }

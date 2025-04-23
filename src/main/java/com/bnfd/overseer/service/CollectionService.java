@@ -1,21 +1,27 @@
 package com.bnfd.overseer.service;
 
 import com.bnfd.overseer.exception.OverseerConflictException;
+import com.bnfd.overseer.exception.OverseerException;
 import com.bnfd.overseer.exception.OverseerNoContentException;
 import com.bnfd.overseer.exception.OverseerNotFoundException;
 import com.bnfd.overseer.model.api.Collection;
 import com.bnfd.overseer.model.api.*;
+import com.bnfd.overseer.model.constants.CollectionTrackingType;
 import com.bnfd.overseer.model.constants.SettingLevel;
 import com.bnfd.overseer.model.constants.SettingType;
 import com.bnfd.overseer.model.persistence.*;
 import com.bnfd.overseer.repository.*;
+import com.bnfd.overseer.service.api.media.server.MediaServerApiService;
+import com.bnfd.overseer.service.api.media.server.PlexMediaServerApiService;
 import com.bnfd.overseer.service.api.web.TmdbWebApiService;
 import com.bnfd.overseer.utils.ActionUtils;
+import com.bnfd.overseer.utils.ApiUtils;
 import com.bnfd.overseer.utils.Constants;
 import com.bnfd.overseer.utils.SettingUtils;
 import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+
+import static com.bnfd.overseer.model.constants.ApiKeyType.PLEX;
 
 @Slf4j
 @Service
@@ -39,6 +47,7 @@ public class CollectionService {
     private final ActionRepository actionRepository;
 
     private final ApiKeyRepository apiKeyRepository;
+    private final List<MediaServerApiService> mediaServerApiServices;
 
     // [TEST]
     private final TmdbWebApiService tmdbWebApiService;
@@ -53,6 +62,7 @@ public class CollectionService {
             SettingRepository settingRepository,
             ActionRepository actionRepository,
             ApiKeyRepository apiKeyRepository,
+            List<MediaServerApiService> mediaServerApiServices,
             TmdbWebApiService tmdbWebApiService) {
         this.overseerMapper = overseerMapper;
         this.collectionRepository = collectionRepository;
@@ -60,6 +70,7 @@ public class CollectionService {
         this.settingRepository = settingRepository;
         this.actionRepository = actionRepository;
         this.apiKeyRepository = apiKeyRepository;
+        this.mediaServerApiServices = mediaServerApiServices;
         this.tmdbWebApiService = tmdbWebApiService;
     }
     // endregion - Constructors -
@@ -139,15 +150,73 @@ public class CollectionService {
         return overseerMapper.map(entity.get(), Collection.class);
     }
 
-    public List<Collection> getCollectionsByLibraryId(String libraryId) {
-        List<CollectionEntity> entities = collectionRepository.findAllByLibraryId(libraryId);
+    public List<Collection> getCollections(Server server, Library library, Map<String, String> options) {
+        List<CollectionEntity> tracked = collectionRepository.findAllByLibraryId(library.getId());
+        List<String> trackedExternalIds = tracked.stream().map(CollectionEntity::getExternalId).toList();
 
-        if (CollectionUtils.isEmpty(entities)) {
-            throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", libraryId));
+        ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
+
+        MediaServerApiService service;
+        switch (apiKey.getName()) {
+            case PLEX ->
+                    service = ApiUtils.retrieveService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+            default -> throw new OverseerException("Error - service for server type not currently supported");
         }
 
-        return overseerMapper.map(entities, new TypeToken<List<Collection>>() {
-        }.getType());
+        String trackingTypeRequest = CollectionUtils.isEmpty(options) ? CollectionTrackingType.ALL_INFO.name() :
+                options.getOrDefault("trackingType", CollectionTrackingType.ALL_INFO.name());
+        switch (CollectionTrackingType.findByName(trackingTypeRequest)) {
+            case CollectionTrackingType.TRACKED_INFO: {
+                // This will retrieve just the collections that are tracked via overseer (information only)
+                if (CollectionUtils.isEmpty(tracked)) {
+                    throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
+                } else {
+                    return overseerMapper.map(tracked, new TypeToken<List<Collection>>() {
+                    }.getType());
+                }
+            }
+            case CollectionTrackingType.TRACKED: {
+                // This will retrieve just the collections that are tracked via overseer (includes media)
+                break;
+            }
+            case CollectionTrackingType.UNTRACKED_INFO: {
+                // This will retrieve just the collections that are NOT tracked via overseer (information only)
+                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), false);
+                if (CollectionUtils.isEmpty(mediaServerCollections)) {
+                    throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
+                } else {
+                    mediaServerCollections.removeIf(collection -> trackedExternalIds.contains(collection.getExternalId()));
+
+                    return overseerMapper.map(mediaServerCollections, new TypeToken<List<Collection>>() {
+                    }.getType());
+                }
+            }
+            case CollectionTrackingType.UNTRACKED: {
+                // This will retrieve just the collections that are NOT tracked via overseer (includes media)
+                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), true);
+                if (CollectionUtils.isEmpty(mediaServerCollections)) {
+                    throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
+                } else {
+                    mediaServerCollections.removeIf(collection -> StringUtils.isNotBlank(collection.getExternalId()) && trackedExternalIds.contains(collection.getExternalId()));
+
+                    return overseerMapper.map(mediaServerCollections, new TypeToken<List<Collection>>() {
+                    }.getType());
+                }
+            }
+            case CollectionTrackingType.ALL: {
+                // This will retrieve all collections (tracked and untracked) - including media
+                break;
+            }
+            case CollectionTrackingType.ALL_INFO: {
+                // This will retrieve all collections (tracked and untracked) - information only - is also fallthrough to default
+            }
+            default: {
+//                log.error("Collection Option [{}] is invalid", options);
+                return Collections.emptyList();
+            }
+        }
+
+        return Collections.emptyList();
     }
     // endregion - GET -
 

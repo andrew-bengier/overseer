@@ -1,8 +1,10 @@
 import React from "react";
 import BlockSection from "../../../components/layouts/sections/BlockSection";
 import LoggingSettingsForm from "../../../components/forms/logging/LoggingSettingsForm";
+import {useIntl} from "react-intl";
 
 function Apis() {
+    const {formatMessage} = useIntl();
 
     return (
         <React.Fragment>

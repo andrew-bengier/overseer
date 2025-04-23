@@ -18,12 +18,12 @@ function BlockSection({header, content, width = '100%'}) {
                     }
                 }}
             />
-            <Divider sx={{width: '80%'}}/>
+            <Divider sx={{width: width}}/>
             <CardContent
                 sx={{
                     paddingTop: '10px',
                     paddingLeft: '5%',
-                    width: width
+                    width: '90%'
                 }}
             >
                 {content}

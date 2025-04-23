@@ -4,6 +4,7 @@ import com.bnfd.overseer.model.api.*;
 import com.bnfd.overseer.model.constants.MediaIdType;
 import com.bnfd.overseer.model.constants.MediaType;
 import com.bnfd.overseer.model.constants.MetadataType;
+import com.bnfd.overseer.model.constants.SettingType;
 import com.bnfd.overseer.model.media.plex.Directory;
 import com.bnfd.overseer.model.media.plex.Video;
 import com.bnfd.overseer.model.persistence.*;
@@ -20,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ObjectUtils;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -75,6 +77,10 @@ public class OverseerMapper extends ModelMapper {
         // region - Plex API -
         mapper.addConverter(plexDirectoryToLibraryEntity());
         mapper.addConverter(plexVideoToMedia());
+
+        mapper.addConverter(plexDirectoryToCollectionEntity());
+        mapper.addConverter(plexMetadataToCollectionEntity());
+        mapper.addConverter(plexMetadataToMediaEntity());
         // endregion - Plex API -
 
         // region - Tmdb API -
@@ -439,6 +445,10 @@ public class OverseerMapper extends ModelMapper {
                     model.setActions(mappingContext.getSource().getActions().stream().map(action -> map(action, Action.class)).collect(Collectors.toCollection(TreeSet::new)));
                 }
 
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getMedia())) {
+                    model.setMedia(new TreeSet<>(mappingContext.getSource().getMedia()));
+                }
+
                 return model;
             }
         };
@@ -555,6 +565,120 @@ public class OverseerMapper extends ModelMapper {
                 entity.setExternalId(mappingContext.getSource().getKey());
                 entity.setType(mappingContext.getSource().getType());
                 entity.setName(mappingContext.getSource().getTitle());
+
+                return entity;
+            }
+        };
+    }
+
+    private Converter<Directory, CollectionEntity> plexDirectoryToCollectionEntity() {
+        return new Converter<Directory, CollectionEntity>() {
+            @Override
+            public CollectionEntity convert(MappingContext<Directory, CollectionEntity> mappingContext) {
+                CollectionEntity entity;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    entity = new CollectionEntity();
+                } else {
+                    entity = mappingContext.getDestination();
+                }
+
+                entity.setExternalId(mappingContext.getSource().getRatingKey());
+                entity.setName(mappingContext.getSource().getTitle());
+
+                Set<SettingEntity> settings = new HashSet<>();
+                if (StringUtils.isNotBlank(mappingContext.getSource().getSummary())) {
+                    settings.add(new SettingEntity(null, null, SettingType.STRING, "summary", mappingContext.getSource().getSummary()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getThumb())) {
+                    settings.add(new SettingEntity(null, null, SettingType.STRING, "thumb", mappingContext.getSource().getThumb()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getYear())) {
+                    settings.add(new SettingEntity(null, null, SettingType.STRING, "year", mappingContext.getSource().getYear()));
+                }
+
+                entity.setSettings(settings);
+
+                return entity;
+            }
+        };
+    }
+
+    private Converter<com.bnfd.overseer.model.media.plex.components.Metadata, CollectionEntity> plexMetadataToCollectionEntity() {
+        return new Converter<com.bnfd.overseer.model.media.plex.components.Metadata, CollectionEntity>() {
+            @Override
+            public CollectionEntity convert(MappingContext<com.bnfd.overseer.model.media.plex.components.Metadata, CollectionEntity> mappingContext) {
+                CollectionEntity entity;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    entity = new CollectionEntity();
+                } else {
+                    entity = mappingContext.getDestination();
+                }
+
+                entity.setExternalId(mappingContext.getSource().getRatingKey());
+                entity.setName(mappingContext.getSource().getTitle());
+
+                return entity;
+            }
+        };
+    }
+
+    private Converter<com.bnfd.overseer.model.media.plex.components.Metadata, Media> plexMetadataToMediaEntity() {
+        return new Converter<com.bnfd.overseer.model.media.plex.components.Metadata, Media>() {
+            @Override
+            public Media convert(MappingContext<com.bnfd.overseer.model.media.plex.components.Metadata, Media> mappingContext) {
+                Media entity;
+                if (ObjectUtils.isEmpty(mappingContext.getDestination())) {
+                    entity = new Media();
+                } else {
+                    entity = mappingContext.getDestination();
+                }
+
+                entity.setType(MediaType.valueOf(mappingContext.getSource().getType().toUpperCase()));
+                entity.setExternalId(mappingContext.getSource().getRatingKey());
+                entity.setAcquired(true);
+
+                Set<Metadata> metadata = new HashSet<>();
+                if (StringUtils.isNotBlank(mappingContext.getSource().getKey())) {
+                    metadata.add(new Metadata(null, "key", mappingContext.getSource().getKey()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getRatingKey())) {
+                    metadata.add(new Metadata(null, "ratingKey", mappingContext.getSource().getRatingKey()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getStudio())) {
+                    metadata.add(new Metadata(null, "studio", mappingContext.getSource().getStudio()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getType())) {
+                    metadata.add(new Metadata(null, "type", mappingContext.getSource().getType()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getTitle())) {
+                    metadata.add(new Metadata(null, "title", mappingContext.getSource().getTitle()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getContentRating())) {
+                    metadata.add(new Metadata(null, "contentRating", mappingContext.getSource().getContentRating()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getSummary())) {
+                    metadata.add(new Metadata(null, "summary", mappingContext.getSource().getSummary()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getRating())) {
+                    metadata.add(new Metadata(null, "rating", mappingContext.getSource().getRating()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getYear())) {
+                    metadata.add(new Metadata(null, "year", mappingContext.getSource().getYear()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getThumb())) {
+                    metadata.add(new Metadata(null, "thumb", mappingContext.getSource().getThumb()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getDuration())) {
+                    metadata.add(new Metadata(null, "duration", mappingContext.getSource().getDuration()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getOriginallyAvailableAt())) {
+                    metadata.add(new Metadata(null, "originallyAvailableAt", mappingContext.getSource().getOriginallyAvailableAt()));
+                }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getOriginallyAvailableAt())) {
+                    metadata.add(new Metadata(null, "originallyAvailableAt", mappingContext.getSource().getOriginallyAvailableAt()));
+                }
+
+                entity.setMetadata(metadata);
 
                 return entity;
             }

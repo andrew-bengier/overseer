@@ -22,7 +22,7 @@ public class Constants {
     public static final String PLEX_LIBRARIES_URL = "/library/sections";
     public static final String PLEX_LIBRARY_URL = "/library/sections/{referenceId}";
     public static final String PLEX_LIBRARY_COLLECTIONS_URL = "/library/sections/{referenceId}/collections";
-    public static final String PLEX_COLLECTIONS_URL = "/library/collection/{referenceId}";
+    public static final String PLEX_COLLECTIONS_URL = "/library/collections/{referenceId}";
     public static final String PLEX_MEDIA_ITEM_URL = "/library/metadata/{referenceId}";
     public static final String PLEX_INCLUDE_CHILDREN_URL = "/children";
     // endregion - Plex Api -
