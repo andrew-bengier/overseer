@@ -77,7 +77,7 @@ public class LibraryService {
         }
 
         try {
-            return service.getMedia(apiKey, "1", Map.of(MediaIdType.IMDB, List.of("tt0084602")));
+            return service.getMedia(apiKey, "1", Map.of(MediaIdType.IMDB, Set.of("tt0084602")));
         } catch (PersistenceException | DataIntegrityViolationException | UnsupportedEncodingException exception) {
             throw new OverseerConflictException(exception.getMessage());
         }
