@@ -10,13 +10,20 @@ import com.bnfd.overseer.model.persistence.ServerEntity;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface MediaServerApiService {
+    // region - GET -
     List<LibraryEntity> getLibraries(ServerEntity server);
 
-    List<CollectionEntity> getCollections(ApiKeyEntity apiKey, String libraryId, boolean includeMedia);
+    List<CollectionEntity> getCollections(ApiKeyEntity apiKey, String libraryId, List<String> collectionExternalIds, boolean includeMedia);
 
-    List<Media> getMedia(ApiKeyEntity apiKey, String libraryId, Map<MediaIdType, List<String>> mediaIds) throws UnsupportedEncodingException;
+    List<Media> getMedia(ApiKeyEntity apiKey, String libraryId, Map<MediaIdType, Set<String>> mediaIds) throws UnsupportedEncodingException;
 
 //    Media getMedia(Server server, String libraryId, String imdbId) throws UnsupportedEncodingException;
+    // endregion - GET -
+
+    // region - PUT -
+    void createOrUpdateCollection(ApiKeyEntity apiKey, CollectionEntity collection, Set<String> mediaIds);
+    // endregion - PUT -
 }

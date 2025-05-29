@@ -1,0 +1,154 @@
+movies:
+  collections:
+    - ratingKey: 248
+      guid: collection://0384c711-2642-4e03-b0ac-688403f1ec72
+      title: 007 - James Bond
+      titleSort: 007
+      contentRating: PG-13
+      summary: The James Bond film series is a British series of spy films based on the fictional character of MI6 agent James Bond, codename \"007\". With all of the action, adventure, gadgetry & film scores that Bond is famous for.
+      thumb: /library/metadata/248/thumb/1692989287
+      art: /library/metadata/248/art/1692989287
+      addedAt: 1655944218
+      updatedAt: 1692989287
+      childCount: 26
+      collectionSort: 0
+      maxYear: 2021
+      minYear: 1962
+      Image:
+        - alt: 007 - James Bond
+          type: coverPoster
+          url: /library/metadata/248/thumb/1692989287
+        - alt: 007 - James Bond
+          type: background
+          url: /library/metadata/248/art/1692989287
+      items:
+        - ratingKey: 204
+          guids:
+            - imdb: tt0055928
+            - tmdb: 646
+            - tvdb: 450
+        - ratingKey: 219
+          guids:
+            - imdb: tt0057076
+            - tmdb: 657
+            - tvdb: 638
+        - ratingKey: 212
+          guids:
+            - imdb: tt0058150
+            - tmdb: 658
+            - tvdb: 701
+        - ratingKey: 94
+          guids:
+            - imdb: tt0059800
+            - tmdb: 660
+            - tvdb: 1685
+        - ratingKey: 215
+          guids:
+            - imdb: tt0062512
+            - tmdb: 667
+            - tvdb: 1192
+        - ratingKey: 70854
+          guids:
+            - imdb: tt0064757
+            - tmdb: 668
+            - tvdb: 862
+        - ratingKey: 22
+          guids:
+            - imdb: tt0066995
+            - tmdb: 681
+            - tvdb: 2675
+        - ratingKey: 10
+          guids:
+            - imdb: tt0070328
+            - tmdb: 253
+            - tvdb: 1110
+        - ratingKey: 173
+          guids:
+            - imdb: tt0071807
+            - tmdb: 682
+            - tvdb: 860
+        - ratingKey: 2
+          guids:
+            - imdb: tt0076752
+            - tmdb: 691
+            - tvdb: 1137
+        - ratingKey: 232
+          guids:
+            - imdb: tt0079574
+            - tmdb: 698
+            - tvdb: 1442
+        - ratingKey: 205
+          guids:
+            - imdb: tt0082398
+            - tmdb: 699
+            - tvdb: 1159
+        - ratingKey: 1
+          guids:
+            - imdb: tt0086034
+            - tmdb: 700
+            - tvdb: 1272
+        - ratingKey: 36
+          guids:
+            - imdb: tt0086006
+            - tmdb: 36670
+            - tvdb: 4831
+        - ratingKey: 70855
+          guids:
+            - imdb: tt0090264
+            - tmdb: 707
+            - tvdb: 642
+        - ratingKey: 3
+          guids:
+            - imdb: tt0093428
+            - tmdb: 708
+            - tvdb: 680
+        - ratingKey: 200
+          guids:
+            - imdb: tt0097742
+            - tmdb: 709
+            - tvdb: 822
+        - ratingKey: 14
+          guids:
+            - imdb: tt0113189
+            - tmdb: 710
+            - tvdb: 765
+        - ratingKey: 175
+          guids:
+            - imdb: tt0120347
+            - tmdb: 714
+            - tvdb: 1124
+        - ratingKey: 17
+          guids:
+            - imdb: tt0143145
+            - tmdb: 36643
+            - tvdb: 755
+        - ratingKey: 224
+          guids:
+            - imdb: tt0246460
+            - tmdb: 36669
+            - tvdb: 941
+        - ratingKey: 156
+          guids:
+            - imdb: tt0381061
+            - tmdb: 36557
+            - tvdb: 330
+        - ratingKey: 174
+          guids:
+            - imdb: tt0830515
+            - tmdb: 10764
+            - tvdb: 400
+        - ratingKey: 31
+          guids:
+            - imdb: tt1074638
+            - tmdb: 37724
+            - tvdb: 279
+        - ratingKey: 92
+          guids:
+            - imdb: tt2379713
+            - tmdb: 206647
+            - tvdb: 296
+        - ratingKey: 70782
+          guids:
+            - imdb: tt2382320
+            - tmdb: 370172
+            - tvdb: 131152

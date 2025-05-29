@@ -2,9 +2,12 @@ import React from "react";
 import {getServers} from "../../services/ServerService";
 import {Box, Grid} from "@mui/material";
 import ServerInfoCard from "../../components/info/servers/ServerInfoCard";
-import Libraries from "../Libraries/Libraries";
+import {toast} from "react-toastify";
+import {useNavigate} from "react-router-dom";
+import {scrubRoutePath} from "../../utils/stringUtils";
 
 function Servers() {
+    const navigate = useNavigate();
     const [servers, setServers] = React.useState([]);
     const [selectedServer, setSelectedServer] = React.useState(null);
 
@@ -12,13 +15,33 @@ function Servers() {
         const fetchServers = async () => {
             const response = await getServers();
             if (response.status === 200) {
-                console.log(response);
+                // console.log(response);
                 setServers(response.data);
+                toast.success('Retrieved servers');
+            } else {
+                toast.error(response.message);
             }
         }
 
         fetchServers().then();
+        // .then(response => {
+        //     if (response.ok) {
+        //         setServers(response.data);
+        //         toast.success('Retrieved servers');
+        //     } else {
+        //         toast.warn(response.message);
+        //     }
+        // })
+        // .catch(error => {
+        //     toast.error('Error fetching servers: ' + error.message);
+        // });
+
     }, []);
+
+    const handleServerSelect = (server) => {
+        // setSelectedServer(server);
+        navigate('/Servers/' + scrubRoutePath(server.id));
+    }
 
     return (
         <Box
@@ -37,16 +60,14 @@ function Servers() {
                 }}
             >
                 {servers.map((server) => (
-                    <Grid size={8} onClick={() => {
-                        setSelectedServer(server);
-                    }}>
+                    <Grid size={8} onClick={() => handleServerSelect(server)}>
                         <ServerInfoCard server={server}/>
                     </Grid>
                 ))}
             </Grid>
-            {selectedServer && (
-                <Libraries server={selectedServer}/>
-            )}
+            {/*{selectedServer && (*/}
+            {/*    <Libraries server={selectedServer}/>*/}
+            {/*)}*/}
         </Box>
     )
 }

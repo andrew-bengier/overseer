@@ -3,8 +3,20 @@ import PropTypes from "prop-types";
 import {Server} from "../../../models/server/Server";
 import {Card, CardHeader, CardMedia, IconButton, Typography} from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import {useDispatch} from "react-redux";
+import {scrubRoutePath} from "../../../utils/stringUtils";
+import {useNavigate} from "react-router-dom";
+import {selectServer} from "../../../redux/actions/Actions";
 
 function ServerInfoCard({server}) {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    function handleServerClick() {
+        dispatch(selectServer(server));
+        navigate('/Servers/' + scrubRoutePath(server.id));
+    }
+
     return (
         <Card
             sx={{
@@ -34,7 +46,9 @@ function ServerInfoCard({server}) {
                 //     </Avatar>
                 // }
                 action={
-                    <IconButton aria-label="server-options">
+                    <IconButton aria-label="server-options" onClick={() => {
+                        handleServerClick();
+                    }}>
                         <MoreVertIcon/>
                     </IconButton>
                 }

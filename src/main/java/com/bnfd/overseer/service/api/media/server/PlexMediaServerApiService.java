@@ -67,11 +67,12 @@ public class PlexMediaServerApiService implements MediaServerApiService {
 
     // region - Collections -
     // TODO: reference here to get collections and tell if tracked or not - by ratingKey = externalId
-    public List<CollectionEntity> getCollections(ApiKeyEntity apiKey, String libraryId, boolean includeMedia) {
+    public List<CollectionEntity> getCollections(ApiKeyEntity apiKey, String libraryId, List<String> collectionExternalIds, boolean includeMedia) {
         StringBuilder requestUrl = new StringBuilder();
         requestUrl.append(apiKey.getUrl())
                 .append(PLEX_LIBRARY_COLLECTIONS_URL.replace("{referenceId}", libraryId));
 
+        List<CollectionEntity> collections = new ArrayList<>();
         try {
             MediaContainer mediaContainer = plexConnection(requestUrl.toString(), apiKey.getKey(), Collections.emptyMap(), Collections.emptyList(), HttpMethod.GET);
 
@@ -81,17 +82,14 @@ public class PlexMediaServerApiService implements MediaServerApiService {
                 return Collections.emptyList();
             } else {
                 if (includeMedia) {
-                    List<CollectionEntity> collections = new ArrayList<>();
                     // Temp: limit 10 collections here
                     // TODO: add pagination
                     for (int d = 0; d < mediaContainer.getDirectories().size() && d < 10; d++) {
 //                    for (Directory directory : mediaContainer.getDirectories()) {
                         collections.add(getCollection(apiKey, libraryId, mediaContainer.getDirectories().get(d).getRatingKey(), true));
                     }
-
-                    return collections;
                 } else {
-                    return overseerMapper.map(mediaContainer.getDirectories(), new TypeToken<List<CollectionEntity>>() {
+                    collections = overseerMapper.map(mediaContainer.getDirectories(), new TypeToken<List<CollectionEntity>>() {
                     }.getType());
                 }
             }
@@ -99,6 +97,12 @@ public class PlexMediaServerApiService implements MediaServerApiService {
             log.error(exception.getMessage());
             return Collections.emptyList();
         }
+
+        if (!CollectionUtils.isEmpty(collectionExternalIds)) {
+            collections.removeIf(collection -> !collectionExternalIds.contains(collection.getExternalId()));
+        }
+
+        return collections;
     }
 
     public CollectionEntity getCollection(ApiKeyEntity apiKey, String libraryId, String collectionId, boolean includeMedia) {
@@ -144,7 +148,7 @@ public class PlexMediaServerApiService implements MediaServerApiService {
     }
 
     // NOTE: mediaIds are plex specific ids (ratingKey)
-    public void createOrUpdateCollection(ApiKeyEntity apiKey, CollectionEntity collection, List<String> mediaIds) {
+    public void createOrUpdateCollection(ApiKeyEntity apiKey, CollectionEntity collection, Set<String> mediaIds) {
         // TODO: error and exception handling
         StringBuilder requestUrl = new StringBuilder();
         requestUrl.append(apiKey.getUrl())
@@ -206,18 +210,18 @@ public class PlexMediaServerApiService implements MediaServerApiService {
 
     // region - Media -
     @Override
-    public List<Media> getMedia(ApiKeyEntity apiKey, String libraryId, Map<MediaIdType, List<String>> mediaIds) {
+    public List<Media> getMedia(ApiKeyEntity apiKey, String libraryId, Map<MediaIdType, Set<String>> mediaIds) {
         StringBuilder requestUrl = new StringBuilder();
         requestUrl.append(apiKey.getUrl())
                 .append(PLEX_LIBRARY_URL.replace("{referenceId}", libraryId))
                 .append(PLEX_ALL_URL);
         Map<String, String> params = Map.of("includeGuids", "1");
 
-        List<Media> media = new ArrayList<>();
         try {
             MediaContainer results = plexConnection(requestUrl.toString(), apiKey.getKey(), params, Collections.emptyList(), HttpMethod.GET);
 
-            for (Map.Entry<MediaIdType, List<String>> entry : mediaIds.entrySet()) {
+            List<Media> media = new ArrayList<>();
+            for (Map.Entry<MediaIdType, Set<String>> entry : mediaIds.entrySet()) {
                 for (String id : entry.getValue()) {
                     String guid = entry.getKey().prefix + id;
                     Optional<Video> filtered = results.getVideos().stream()
@@ -232,7 +236,7 @@ public class PlexMediaServerApiService implements MediaServerApiService {
         } catch (IOException | JAXBException | URISyntaxException exception) {
             // TODO: proper error handling here
             log.error(exception.getMessage());
-            return null;
+            return Collections.emptyList();
         }
     }
 

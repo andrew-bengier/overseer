@@ -1,7 +1,10 @@
 package com.bnfd.overseer.controller;
 
 import com.bnfd.overseer.model.api.Library;
+import com.bnfd.overseer.model.api.Server;
+import com.bnfd.overseer.service.CollectionService;
 import com.bnfd.overseer.service.LibraryService;
+import com.bnfd.overseer.service.ServerService;
 import com.bnfd.overseer.service.ValidationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -21,19 +24,18 @@ public class LibraryController {
     // region - Class Variables -
     private final ValidationService validationService;
 
+    private final ServerService serverService;
     private final LibraryService libraryService;
-
-//    private final CollectionService collectionService;
+    private final CollectionService collectionService;
     // endregion - Class Variables -
 
     // region - Constructors -
     @Autowired
-    public LibraryController(ValidationService validationService, LibraryService libraryService
-//            , CollectionService collectionService
-    ) {
+    public LibraryController(ValidationService validationService, ServerService serverService, LibraryService libraryService, CollectionService collectionService) {
         this.validationService = validationService;
+        this.serverService = serverService;
         this.libraryService = libraryService;
-//        this.collectionService = collectionService;
+        this.collectionService = collectionService;
     }
     // endregion - Constructors -
 
@@ -109,4 +111,17 @@ public class LibraryController {
         return ResponseEntity.ok().build();
     }
     // endregion - DELETE -
+
+    // [TEST]
+    @PostMapping(value = "/{libraryId}/test/processCheck", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> processCheck(@PathVariable String serverId, @PathVariable String libraryId) throws Throwable {
+        log.info("Processing check collections for - id [{}]", libraryId);
+
+        Server server = serverService.getServerById(serverId);
+        Library library = libraryService.getLibraryById(libraryId);
+
+        collectionService.processCheckCollections(server, library);
+        
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

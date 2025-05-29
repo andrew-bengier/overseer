@@ -781,6 +781,9 @@ public class OverseerMapper extends ModelMapper {
                 if (StringUtils.isNotBlank(mappingContext.getSource().getPosterPath())) {
                     media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), mappingContext.getSource().getPosterPath()));
                 }
+                if (StringUtils.isNotBlank(mappingContext.getSource().getImdbID())) {
+                    media.addMetadata(new Metadata(null, MetadataType.EXTERNAL_ID.name(), MediaIdType.IMDB.name() + "_" + mappingContext.getSource().getImdbID()));
+                }
 
                 return media;
             }

@@ -1,6 +1,6 @@
 import React from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import {Box, Divider, Drawer, List, Toolbar} from "@mui/material";
+import {Box, Divider, Drawer, List} from "@mui/material";
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import {scrubRoutePath} from "../../../utils/stringUtils";
 import SidenavList from "./SidenavList";
@@ -58,19 +58,23 @@ function Sidenav({open, navRoutes, toggleSidenav}) {
                 sx={{
                     width: 240,
                     flexShrink: 0,
+                    "& .MuiDrawer-paper": {
+                        marginTop: '64px'
+                        // height: "100%"
+                    }
                 }}
             >
-                <Toolbar/>
-                <Box sx={{paddingTop: 2}}>
+                {/*<Toolbar/>*/}
+                <Box sx={{paddingTop: 0}}>
                     <List sx={{width: '240px'}}>
-                        {navRoutes.filter(route => route.standardNav).map((route) => (
+                        {navRoutes.filter(route => route.displayNav && route.standardNav).map((route) => (
                             <SidenavList key={route.key} route={route} handleRouteClick={handleRouteClick}
                                          checkCurrent={isCurrentLocation}/>
                         ))}
                     </List>
                     <Divider/>
                     <List sx={{width: '240px'}}>
-                        {navRoutes.filter(route => !route.standardNav).map((route) => (
+                        {navRoutes.filter(route => route.displayNav && !route.standardNav).map((route) => (
                             <SidenavList key={route.key} route={route} handleRouteClick={handleRouteClick}
                                          checkCurrent={isCurrentLocation}/>
                         ))}

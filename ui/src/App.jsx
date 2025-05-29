@@ -4,12 +4,12 @@ import {Box, ThemeProvider} from "@mui/material";
 import {Navigate, Outlet, Route, Routes} from "react-router-dom";
 import {ToastContainer} from "react-toastify";
 import Header from "./components/layouts/header/Header";
-import ThemeSwitcher from "./themes/ThemeSwitcher";
 import Sidenav from "./components/layouts/sidenav/Sidenav";
 import useScreenSize from "./hooks/useScreenSize";
 import AppRoutes, {routePaths} from "./routes/AppRoutes";
 import {scrubRoutePath} from "./utils/stringUtils";
 import Error404 from "./routes/Error/Error404";
+import {useSelector} from "react-redux";
 
 const navRoutes = AppRoutes;
 
@@ -18,7 +18,9 @@ function App() {
     // const {theme} = useTheme();
     // const screenSize = useScreenSize();
     const isMobile = useScreenSize(window.width);
-    const [darkMode, setDarkMode] = React.useState(false);
+    const theme = useSelector((state) => state.theme);
+
+    const currentServer = useSelector((state) => state.server);
     const [sidenavOpen, setSidenavOpen] = React.useState(!isMobile);
     // TODO: change default sidenav open based on screen size
 
@@ -29,26 +31,32 @@ function App() {
     //   .catch(error => console.log(error));
     // }, []);
 
+    // [TEST]
+    React.useEffect(() => {
+        console.log(navRoutes);
+    }, [navRoutes]);
+
+
     React.useEffect(() => {
         setSidenavOpen(!isMobile);
     }, [isMobile]);
 
-    function handleThemeToggle(toggle) {
-        setDarkMode(toggle);
-    }
+    React.useEffect(() => {
+        console.log(currentServer);
+    }, [currentServer]);
 
     function handleSidenavToggle() {
         setSidenavOpen(!sidenavOpen);
     }
 
     return (
-        <ThemeProvider theme={darkMode ? ThemeSwitcher(1) : ThemeSwitcher(0)}>
+        <ThemeProvider theme={theme.theme}>
             <ToastContainer
                 position="bottom-right"
                 autoClose={2000}
                 closeOnClick={true}
                 pauseOnFocusLoss={false}
-                theme={darkMode ? "dark" : "colored"}
+                theme={theme.theme.darkMode ? "dark" : "colored"}
             />
             <Box
                 id="app-container"
@@ -58,8 +66,7 @@ function App() {
                     height: '100%'
                 }}
             >
-                <Header theme={darkMode ? ThemeSwitcher(1) : ThemeSwitcher(0)} toggleTheme={handleThemeToggle}
-                        toggleSidenav={handleSidenavToggle}/>
+                <Header toggleSidenav={handleSidenavToggle}/>
                 <Box
                     id="main-container"
                     component="main"
@@ -70,7 +77,8 @@ function App() {
                         paddingTop: '64px'
                     }}
                 >
-                    <Sidenav open={sidenavOpen} navRoutes={navRoutes} toggleSidenav={handleSidenavToggle}/>
+                    <Sidenav open={sidenavOpen} navRoutes={navRoutes.filter(route => route.displayNav)}
+                             toggleSidenav={handleSidenavToggle}/>
                     <Box
                         sx={{
                             marginLeft: !isMobile ? '250px' : 2,
@@ -93,13 +101,23 @@ function App() {
                                                                               route={route}/>}
                                                 />
                                                 {route.subRoutes.filter(subRoute => subRoute.component != null).map((subRoute) => (
-                                                    <Route
-                                                        key={scrubRoutePath(route.key) + routePaths.separator + scrubRoutePath(subRoute.key)}
-                                                        path={routePaths.separator + scrubRoutePath(route.name) + routePaths.separator + scrubRoutePath(subRoute.name)}
-                                                        element={<subRoute.component
-                                                            key={scrubRoutePath(subRoute.key)}
-                                                            route={subRoute}/>}
-                                                    />
+                                                    subRoute.nested ? (
+                                                        <Route
+                                                            key={scrubRoutePath(route.key) + routePaths.nested}
+                                                            path={routePaths.separator + scrubRoutePath(route.name) + routePaths.nested}
+                                                            element={<subRoute.component
+                                                                key={scrubRoutePath(subRoute.key)}
+                                                                route={subRoute}/>}
+                                                        />
+                                                    ) : (
+                                                        <Route
+                                                            key={scrubRoutePath(route.key) + routePaths.separator + scrubRoutePath(subRoute.key)}
+                                                            path={routePaths.separator + scrubRoutePath(route.name) + routePaths.separator + scrubRoutePath(subRoute.name)}
+                                                            element={<subRoute.component
+                                                                key={scrubRoutePath(subRoute.key)}
+                                                                route={subRoute}/>}
+                                                        />
+                                                    )
                                                 ))}
                                             </Route>
                                         )
@@ -116,13 +134,23 @@ function App() {
                                     route.subRoutes && (
                                         <Route key={scrubRoutePath(route.key) + '_parent'}>
                                             {route.subRoutes.filter(subRoute => subRoute.component != null).map((subRoute) => (
-                                                <Route
-                                                    key={scrubRoutePath(route.key) + routePaths.separator + scrubRoutePath(subRoute.key)}
-                                                    path={routePaths.separator + scrubRoutePath(route.name) + routePaths.separator + scrubRoutePath(subRoute.name)}
-                                                    element={<subRoute.component
-                                                        key={scrubRoutePath(subRoute.key)}
-                                                        route={subRoute}/>}
-                                                />
+                                                subRoute.nested ? (
+                                                    <Route
+                                                        key={scrubRoutePath(route.key) + routePaths.nested}
+                                                        path={routePaths.separator + scrubRoutePath(route.name) + routePaths.nested}
+                                                        element={<subRoute.component
+                                                            key={scrubRoutePath(subRoute.key)}
+                                                            route={subRoute}/>}
+                                                    />
+                                                ) : (
+                                                    <Route
+                                                        key={scrubRoutePath(route.key) + routePaths.separator + scrubRoutePath(subRoute.key)}
+                                                        path={routePaths.separator + scrubRoutePath(route.name) + routePaths.separator + scrubRoutePath(subRoute.name)}
+                                                        element={<subRoute.component
+                                                            key={scrubRoutePath(subRoute.key)}
+                                                            route={subRoute}/>}
+                                                    />
+                                                )
                                             ))}
                                         </Route>
                                     )

@@ -28,7 +28,7 @@ export default function SidenavList({route, handleRouteClick, checkCurrent}) {
                         </ListItemButton>
                     )}
                     <List component="div" disablePadding>
-                        {route.subRoutes.map((subRoute) => (
+                        {route.subRoutes.filter((subRoute) => subRoute.displayNav).map((subRoute) => (
                             <ListItemButton key={subRoute.name}
                                             onClick={() => navigate('/' + scrubRoutePath(route.name) + '/' + scrubRoutePath(subRoute.name))}
                                             selected={checkCurrent(subRoute)}

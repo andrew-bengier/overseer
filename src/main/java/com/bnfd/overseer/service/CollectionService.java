@@ -6,18 +6,16 @@ import com.bnfd.overseer.exception.OverseerNoContentException;
 import com.bnfd.overseer.exception.OverseerNotFoundException;
 import com.bnfd.overseer.model.api.Collection;
 import com.bnfd.overseer.model.api.*;
-import com.bnfd.overseer.model.constants.CollectionTrackingType;
-import com.bnfd.overseer.model.constants.SettingLevel;
-import com.bnfd.overseer.model.constants.SettingType;
+import com.bnfd.overseer.model.constants.*;
 import com.bnfd.overseer.model.persistence.*;
 import com.bnfd.overseer.repository.*;
 import com.bnfd.overseer.service.api.media.server.MediaServerApiService;
 import com.bnfd.overseer.service.api.media.server.PlexMediaServerApiService;
 import com.bnfd.overseer.service.api.web.TmdbWebApiService;
-import com.bnfd.overseer.utils.ActionUtils;
-import com.bnfd.overseer.utils.ApiUtils;
-import com.bnfd.overseer.utils.Constants;
-import com.bnfd.overseer.utils.SettingUtils;
+import com.bnfd.overseer.service.api.web.WebApiService;
+import com.bnfd.overseer.service.builder.BuilderService;
+import com.bnfd.overseer.service.builder.TmdbBuilderService;
+import com.bnfd.overseer.utils.*;
 import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -31,9 +29,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import static com.bnfd.overseer.model.constants.ApiKeyType.PLEX;
+import static com.bnfd.overseer.model.constants.BuilderType.TMDB;
 
 @Slf4j
 @Service
@@ -47,10 +47,10 @@ public class CollectionService {
     private final ActionRepository actionRepository;
 
     private final ApiKeyRepository apiKeyRepository;
-    private final List<MediaServerApiService> mediaServerApiServices;
 
-    // [TEST]
-    private final TmdbWebApiService tmdbWebApiService;
+    private final List<MediaServerApiService> mediaServerApiServices;
+    private final List<WebApiService> webApiServices;
+    private final List<BuilderService> builderServices;
     // endregion - Class Variables -
 
     // region - Constructors -
@@ -63,7 +63,8 @@ public class CollectionService {
             ActionRepository actionRepository,
             ApiKeyRepository apiKeyRepository,
             List<MediaServerApiService> mediaServerApiServices,
-            TmdbWebApiService tmdbWebApiService) {
+            List<BuilderService> builderServices,
+            List<WebApiService> webApiServices) {
         this.overseerMapper = overseerMapper;
         this.collectionRepository = collectionRepository;
         this.collectionBuilderRepository = collectionBuilderRepository;
@@ -71,12 +72,14 @@ public class CollectionService {
         this.actionRepository = actionRepository;
         this.apiKeyRepository = apiKeyRepository;
         this.mediaServerApiServices = mediaServerApiServices;
-        this.tmdbWebApiService = tmdbWebApiService;
+        this.builderServices = builderServices;
+        this.webApiServices = webApiServices;
     }
     // endregion - Constructors -
 
+    // region - Process -
     @Transactional
-    public Collection processCollectionById(String collectionId) {
+    public Collection processCollectionById(Server server, String libraryId, String collectionId) throws UnsupportedEncodingException {
         Optional<CollectionEntity> entity = collectionRepository.findById(collectionId);
 
         if (entity.isEmpty()) {
@@ -92,25 +95,108 @@ public class CollectionService {
             log.debug("Processing action {}", action);
         });
 
+        List<Media> media = new ArrayList<>();
         collectionEntity.getBuilders().forEach(collectionBuilder -> {
             log.debug("Processing builder {} {} - {}: {}", collectionBuilder.getType(), collectionBuilder.getCategory(), collectionBuilder.getName(), String.join(", ", collectionBuilder.getBuilderAttributes()));
+            // TODO: add checks here for settings & actions (overridable / changeable)
+
+            BuilderService builderService;
+            switch (collectionBuilder.getType()) {
+                case TMDB -> {
+                    builderService = ApiUtils.retrieveBuilderService(TMDB, TmdbBuilderService.class, builderServices, true);
+                    // TODO: add check here for builderCategory
+                    for (String builderAttribute : collectionBuilder.getBuilderAttributes()) {
+                        media.addAll(builderService.processCollectionBuilder(builderAttribute, collectionBuilder.getCategory()));
+                        log.info("{} processed", builderAttribute);
+                    }
+                }
+                default -> throw new OverseerException("Error - service for server type not currently supported");
+            }
         });
+
+        // check media server for media
+        MediaServerApiService mediaService;
+        ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
+        switch (apiKey.getName()) {
+            case PLEX ->
+                    mediaService = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+            default -> throw new OverseerException("Error - service for server type not currently supported");
+        }
+        // - check if media exists in media server (if so, is it already in collection, if not update to add)
+        Map<MediaIdType, Set<String>> externalIds = new HashMap<>();
+        for (Media part : media) {
+            part.getMetadata()
+                    .stream()
+                    .filter(metadata -> metadata.getName().equalsIgnoreCase(MetadataType.EXTERNAL_ID.name()))
+                    .findFirst()
+                    .ifPresent(metadata -> {
+                        externalIds.put(ApiUtils.getMediaIdType(metadata.getValue()), ListUtils.addExternalIdsToMap(externalIds, metadata));
+                    });
+        }
+        List<Media> currentlyInMediaServer = mediaService.getMedia(apiKey, libraryId, externalIds);
+
+        // - check if collection exists in media server (or else make)
+        if (StringUtils.isBlank(collectionEntity.getExternalId())) {
+            // not tracked/created yet
+            // check if collection exists -
+            // - if not, create
+            // - else track (need to match on collection name...)
+            CollectionEntity currentCollection = mediaService.getCollections(apiKey, libraryId, Collections.emptyList(), true)
+                    .stream()
+                    .filter(collection -> collection.getName().equals(collectionEntity.getName()))
+                    .findFirst()
+                    .orElse(null);
+            if (currentCollection != null) {
+                // combine since already exists
+                collectionEntity.setExternalId(currentCollection.getExternalId());
+            } else {
+                // create
+                currentCollection = new CollectionEntity();
+                // TODO: update here to have correct info
+                // TODO: check if need to include the media - then update metadata afterwards
+
+//                mediaService.createOrUpdateCollection(apiKey, currentCollection, Collections.emptySet());
+            }
+        } else {
+            // already in media server
+        }
+
+        // handle media that is acquired but not in collection
+        // handle media not acquired
 
         return overseerMapper.map(entity.get(), Collection.class);
     }
 
-    // [TEST]
-    // process - getCollectionMedia
-    public List<Media> getCollectionMedia(String collectionId) {
-//        return tmdbWebApiService.getMediaFromCollection(collectionId);
-        return List.of(tmdbWebApiService.getSeries(collectionId));
+    @Transactional
+    public void processCheckCollections(Server server, Library library) {
+        Map<String, String> options = Map.of("trackingType", CollectionTrackingType.UNTRACKED.name());
+        List<Collection> collections = getCollections(server, library, options);
+        if (!CollectionUtils.isEmpty(collections)) {
+            WebApiService tmdbWebApiService = ApiUtils.retrieveWebApiService(TMDB, TmdbWebApiService.class, webApiServices, true);
+            for (Collection collection : collections) {
+                log.info("Processing collection {}", collection.getName());
+                List<Collection> potentialMatches = tmdbWebApiService.searchCollections(collection.getName());
+                if (!CollectionUtils.isEmpty(potentialMatches)) {
+                    log.info("Found {} potential matches for {}", potentialMatches.size(), collection.getName());
+                    for (Collection potentialMatch : potentialMatches) {
+                        log.info(potentialMatch.getName());
+                        for (Media media : potentialMatch.getMedia()) {
+                            Optional<Metadata> name = media.getMetadata().stream().filter(part -> part.getName().equalsIgnoreCase(MetadataType.TITLE.name())).findFirst();
+                            name.ifPresent(metadata -> log.info(metadata.getValue()));
+                        }
+                    }
+                }
+            }
+        }
     }
+    // endregion - Process -
 
     // region - CREATE -
     @Transactional
     public Collection addCollection(Server server, Collection collection, boolean process) {
+        String collectionId = UUID.randomUUID().toString();
         CollectionEntity entity = overseerMapper.map(collection, CollectionEntity.class);
-        entity.setId(UUID.randomUUID().toString());
+        entity.setId(collectionId);
         entity.setBuilders(null);
 
         try {
@@ -120,6 +206,7 @@ public class CollectionService {
             }.getType());
             builderEntities.forEach(builder -> {
                 builder.setId(UUID.randomUUID().toString());
+                builder.setCollectionId(collectionId);
             });
             entity.setBuilders(new HashSet<>(collectionBuilderRepository.saveAll(builderEntities)));
 
@@ -159,12 +246,13 @@ public class CollectionService {
         MediaServerApiService service;
         switch (apiKey.getName()) {
             case PLEX ->
-                    service = ApiUtils.retrieveService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+                    service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
         }
 
         String trackingTypeRequest = CollectionUtils.isEmpty(options) ? CollectionTrackingType.ALL_INFO.name() :
                 options.getOrDefault("trackingType", CollectionTrackingType.ALL_INFO.name());
+        // TODO: update here to see if tracked is the same as what's currently in mediaServer
         switch (CollectionTrackingType.findByName(trackingTypeRequest)) {
             case CollectionTrackingType.TRACKED_INFO: {
                 // This will retrieve just the collections that are tracked via overseer (information only)
@@ -177,11 +265,17 @@ public class CollectionService {
             }
             case CollectionTrackingType.TRACKED: {
                 // This will retrieve just the collections that are tracked via overseer (includes media)
-                break;
+                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), trackedExternalIds, false);
+                if (CollectionUtils.isEmpty(mediaServerCollections)) {
+                    throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
+                } else {
+                    return overseerMapper.map(mediaServerCollections, new TypeToken<List<Collection>>() {
+                    }.getType());
+                }
             }
             case CollectionTrackingType.UNTRACKED_INFO: {
                 // This will retrieve just the collections that are NOT tracked via overseer (information only)
-                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), false);
+                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), Collections.emptyList(), false);
                 if (CollectionUtils.isEmpty(mediaServerCollections)) {
                     throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
                 } else {
@@ -193,7 +287,7 @@ public class CollectionService {
             }
             case CollectionTrackingType.UNTRACKED: {
                 // This will retrieve just the collections that are NOT tracked via overseer (includes media)
-                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), true);
+                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), Collections.emptyList(), true);
                 if (CollectionUtils.isEmpty(mediaServerCollections)) {
                     throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
                 } else {
@@ -347,4 +441,12 @@ public class CollectionService {
         return collectionSettings;
     }
     // endregion - Protected Methods -
+
+    // [TEST]
+    // process - getCollectionMedia
+    public List<Media> getCollectionMedia(String collectionId) {
+//        return tmdbWebApiService.getMediaFromCollection(collectionId);
+        WebApiService tmdbWebApiService = ApiUtils.retrieveWebApiService(TMDB, TmdbWebApiService.class, webApiServices, true);
+        return List.of(tmdbWebApiService.getSeries(collectionId));
+    }
 }

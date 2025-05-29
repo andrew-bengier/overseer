@@ -2,15 +2,14 @@ package com.bnfd.overseer.service.api.web;
 
 import com.bnfd.overseer.exception.OverseerException;
 import com.bnfd.overseer.exception.OverseerPreConditionRequiredException;
-import com.bnfd.overseer.model.api.Media;
-import com.bnfd.overseer.model.api.Metadata;
-import com.bnfd.overseer.model.constants.MediaIdType;
-import com.bnfd.overseer.model.constants.MediaType;
-import com.bnfd.overseer.model.constants.MetadataType;
+import com.bnfd.overseer.model.api.Collection;
+import com.bnfd.overseer.model.api.*;
+import com.bnfd.overseer.model.constants.*;
 import com.bnfd.overseer.service.ApiKeyService;
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.model.collections.CollectionInfo;
 import info.movito.themoviedbapi.model.movies.MovieDb;
+import info.movito.themoviedbapi.model.search.CollectionResultsPage;
 import info.movito.themoviedbapi.model.tv.core.TvSeason;
 import info.movito.themoviedbapi.model.tv.episode.TvEpisodeDb;
 import info.movito.themoviedbapi.model.tv.season.TvSeasonDb;
@@ -43,10 +42,9 @@ public class TmdbWebApiService implements WebApiService {
     @Autowired
     public TmdbWebApiService(@Qualifier("overseer-mapper") ModelMapper overseerMapper, ApiKeyService apiKeyService) {
         try {
-//            ApiKey apiKey = apiKeyService.getAllApiKeysByName(ApiKeyType.TMDB).getFirst();
-//            api = new TmdbApi(apiKey.getKey());
+            ApiKey apiKey = apiKeyService.getAllApiKeysByName(ApiKeyType.TMDB).getFirst();
+            api = new TmdbApi(apiKey.getKey());
             this.overseerMapper = overseerMapper;
-            api = new TmdbApi("eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyOTFmNDhmNWJhNjM1Yzg4ZmRkMGYzMTI1ZDMzYjY3MSIsIm5iZiI6MTU4MjA4MDk3OS4xNTYsInN1YiI6IjVlNGNhM2QzMzU4MTFkMDAxMzRkOGQzMyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.qyNvEAXytWdysz2Dd78OFRxqB-1W1Qhxab-IO4pfSBc");
         } catch (PersistenceException | NoSuchElementException exception) {
             throw new OverseerPreConditionRequiredException("Tmdb API keys not found");
         }
@@ -143,6 +141,40 @@ public class TmdbWebApiService implements WebApiService {
             throw new OverseerException(exception.getMessage());
         }
 
+    }
+
+    @Override
+    public List<Collection> searchCollections(String collectionName) {
+        try {
+            CollectionResultsPage results = api.getSearch().searchCollection(collectionName, "english", true, 1, "en_us");
+            if (results.getTotalResults() != 0) {
+                List<com.bnfd.overseer.model.api.Collection> potentialMatches = new ArrayList<>();
+                results.getResults().forEach(result -> {
+                    Builder builder = new Builder();
+                    builder.setType(BuilderType.TMDB);
+                    builder.setCategory(BuilderCategory.LIST);
+                    builder.setAttributes(List.of(String.valueOf(result.getId())));
+                    Setting collectionOverview = new Setting();
+                    collectionOverview.setType(SettingType.STRING);
+                    collectionOverview.setName("overview");
+                    collectionOverview.setVal(result.getOverview());
+                    Collection collection = new Collection();
+                    collection.setName(result.getName());
+                    collection.setSettings(Set.of(collectionOverview));
+                    collection.setBuilders(Set.of(builder));
+
+                    collection.setMedia(new HashSet<>(getMediaFromCollection(String.valueOf(result.getId()))));
+
+                    potentialMatches.add(collection);
+                });
+
+                return potentialMatches;
+            }
+
+            return Collections.emptyList();
+        } catch (TmdbException exception) {
+            throw new OverseerException(exception.getMessage());
+        }
     }
 
     private static List<MovieAppendToResponse> getResponseAppendicesForMovies() {

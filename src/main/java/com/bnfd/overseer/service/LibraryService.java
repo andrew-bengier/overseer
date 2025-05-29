@@ -72,7 +72,7 @@ public class LibraryService {
         MediaServerApiService service;
         switch (apiKey.getName()) {
             case PLEX ->
-                    service = ApiUtils.retrieveService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+                    service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
         }
 
@@ -92,7 +92,7 @@ public class LibraryService {
         MediaServerApiService service;
         switch (apiKey.getName()) {
             case PLEX ->
-                    service = ApiUtils.retrieveService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+                    service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
         }
 
@@ -160,7 +160,7 @@ public class LibraryService {
         MediaServerApiService service;
         switch (apiKey.getName()) {
             case PLEX ->
-                    service = ApiUtils.retrieveService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+                    service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
         }
 

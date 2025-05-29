@@ -73,13 +73,12 @@ public class CollectionController {
     // endregion - GET -
 
     // region - PUT -
-    @PutMapping(value = "/{collectionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{collectionId}/process", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> processCollection(@PathVariable String serverId, @PathVariable String libraryId, @PathVariable String collectionId) throws Throwable {
         log.info("Processing collection - id [{}]", collectionId);
 
-
         Server server = serverService.getServerById(serverId);
-        return new ResponseEntity<>(collectionService.processCollectionById(collectionId), HttpStatus.OK);
+        return new ResponseEntity<>(collectionService.processCollectionById(server, libraryId, collectionId), HttpStatus.OK);
     }
     // endregion - PUT -
 

@@ -1,19 +1,23 @@
 import React from 'react';
 import {FormattedMessage, useIntl} from 'react-intl';
 import {useNavigate} from "react-router-dom";
-import {AppBar, Box, IconButton, Menu, MenuItem, Switch, Toolbar, Tooltip, Typography} from "@mui/material";
+import {AppBar, Box, IconButton, Menu, MenuItem, Switch, TextField, Toolbar, Tooltip, Typography} from "@mui/material";
 import PersonIcon from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
 import messages from "./messages";
 import useScreenSize from "../../../hooks/useScreenSize";
+import {useDispatch, useSelector} from "react-redux";
+import {resetServer, updateTheme} from "../../../redux/actions/Actions";
 
-function Header({theme, toggleTheme, toggleSidenav}) {
+function Header({toggleSidenav}) {
     // const screenSize = useScreenSize();
     const isMobile = useScreenSize(window.width);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const currentServer = useSelector((state) => state.server);
     const {formatMessage} = useIntl();
     const [anchorElUser, setAnchorElUser] = React.useState(null);
-    const [darkMode, setDarkMode] = React.useState(theme.palette.mode === 'dark');
+    const [darkMode, setDarkMode] = React.useState(false);
 
     // React.useEffect(() => {
     //     console.log("loaded header")
@@ -21,7 +25,7 @@ function Header({theme, toggleTheme, toggleSidenav}) {
 
     const toggleDarkMode = (dark) => {
         setDarkMode(dark);
-        toggleTheme(dark);
+        dispatch(updateTheme(dark));
     };
 
     const handleOpenUserMenu = (event) => {
@@ -68,11 +72,19 @@ function Header({theme, toggleTheme, toggleSidenav}) {
                     disableGutters
                 >
                     {!isMobile &&
-                        <Box
-                            sx={{
-                                flexGrow: 1,
-                            }}
-                        />
+                        <Box sx={{flexGrow: 1}}>
+                            {currentServer && (
+                                <TextField
+                                    id="outlined-basic"
+                                    variant="outlined"
+                                    value={currentServer.name}
+                                    sx={{
+                                        paddingLeft: '245px'
+                                    }}
+                                    onClick={() => dispatch(resetServer())}
+                                />
+                            )}
+                        </Box>
                     }
                     <Box
                         sx={{

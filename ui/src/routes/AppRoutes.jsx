@@ -11,6 +11,8 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import ApiOutlinedIcon from '@mui/icons-material/ApiOutlined';
 import DisplaySettingsOutlinedIcon from '@mui/icons-material/DisplaySettingsOutlined';
 import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import Settings from "./Settings/Settings";
 import Test from "./Test/Test";
 import General from "./Settings/subRoutes/General";
@@ -22,6 +24,11 @@ import Logs from "./System/subRoutes/Logs";
 import Events from "./System/subRoutes/Events";
 import Apis from "./Settings/subRoutes/Apis";
 import Servers from "./Servers/Servers";
+import Collections from "./Collections/Collections";
+import Server from "./Servers/Server";
+import Collection from "./Collections/Collection";
+import Libraries from "./Libraries/Libraries";
+import Library from "./Libraries/Library";
 
 export const navRoute = PropTypes.shape({
     name: PropTypes.string.isRequired,
@@ -29,13 +36,16 @@ export const navRoute = PropTypes.shape({
     description: PropTypes.string,
     component: PropTypes.element.isRequired,
     icon: PropTypes.element | null,
+    displayNav: PropTypes.bool.isRequired,
     standardNav: PropTypes.bool.isRequired,
+    nested: PropTypes.bool,
     subRoutes: PropTypes.array
 });
 
 export const routePaths = {
     all: '/*',
     separator: '/',
+    nested: '/:id',
     Settings: '/Settings'
 };
 
@@ -48,16 +58,75 @@ const AppRoutes = [
         description: 'Test',
         component: Test,
         icon: BugReportIcon,
+        displayNav: true,
         standardNav: true,
         subRoutes: []
-    }, {
+    },
+    {
         name: 'Servers',
         key: 'Servers',
         description: 'Servers',
         component: Servers,
         icon: StorageOutlinedIcon,
+        displayNav: true,
         standardNav: true,
-        subRoutes: []
+        subRoutes: [
+            {
+                name: 'Server',
+                key: 'Server',
+                description: 'Server',
+                component: Server,
+                icon: StorageOutlinedIcon,
+                displayNav: false,
+                standardNav: true,
+                nested: true,
+                subRoutes: []
+            }
+        ]
+    },
+    {
+        name: 'Libraries',
+        key: 'Libraries',
+        description: 'Libraries',
+        component: Libraries,
+        icon: LibraryBooksIcon,
+        displayNav: false,
+        standardNav: true,
+        subRoutes: [
+            {
+                name: 'Library',
+                key: 'Library',
+                description: 'Library',
+                component: Library,
+                icon: LibraryBooksIcon,
+                displayNav: false,
+                standardNav: true,
+                nested: true,
+                subRoutes: []
+            }
+        ]
+    },
+    {
+        name: 'Collections',
+        key: 'Collections',
+        description: 'Collections',
+        component: Collections,
+        icon: ContentCopyIcon,
+        displayNav: false,
+        standardNav: true,
+        subRoutes: [
+            {
+                name: 'Collection',
+                key: 'Collection',
+                description: 'Collection',
+                component: Collection,
+                icon: ContentCopyIcon,
+                displayNav: false,
+                standardNav: true,
+                nested: true,
+                subRoutes: []
+            }
+        ]
     },
     {
         name: 'Settings',
@@ -65,6 +134,7 @@ const AppRoutes = [
         description: 'Application settings',
         component: Settings,
         icon: SettingsIcon,
+        displayNav: true,
         standardNav: false,
         subRoutes: [
             {
@@ -73,6 +143,7 @@ const AppRoutes = [
                 description: 'Analytics and updates',
                 component: General,
                 icon: SettingsOutlinedIcon,
+                displayNav: true,
                 standardNav: true,
                 subRoutes: []
             },
@@ -82,6 +153,7 @@ const AppRoutes = [
                 description: 'Api Connectivity',
                 component: Apis,
                 icon: ApiOutlinedIcon,
+                displayNav: true,
                 standardNav: true,
                 subRoutes: []
             },
@@ -91,31 +163,10 @@ const AppRoutes = [
                 description: 'Calendar, dates and accessibility',
                 component: UI,
                 icon: DisplaySettingsOutlinedIcon,
+                displayNav: true,
                 standardNav: true,
                 subRoutes: []
             }
-            //     Media Management
-            //     Profiles
-            //     Quality
-            //     Custom Formats
-            //     Indexers
-            //     Download Clients
-            //     Import Lists
-            //     Connect
-            //     Metadata
-            //     Metadata Sources
-            //     Tags
-            //     General
-            //          Host
-            //          Security
-            //          Logging
-            //          Updates
-            //          Backups
-            //     UI
-            //          Calendar
-            //          Dates
-            //          Style
-            //          Language (for ui)
         ]
     },
     {
@@ -124,6 +175,7 @@ const AppRoutes = [
         description: 'Application Information',
         component: null,
         icon: ComputerIcon,
+        displayNav: true,
         standardNav: false,
         subRoutes: [
             {
@@ -132,6 +184,7 @@ const AppRoutes = [
                 description: 'Status',
                 component: Status,
                 icon: BarChartIcon,
+                displayNav: true,
                 standardNav: false,
                 subRoutes: []
             },
@@ -141,6 +194,7 @@ const AppRoutes = [
                 description: 'Scheduled tasks',
                 component: Tasks,
                 icon: ScheduleIcon,
+                displayNav: true,
                 standardNav: false,
                 subRoutes: []
             },
@@ -150,6 +204,7 @@ const AppRoutes = [
                 description: 'Events',
                 component: Events,
                 icon: FormatListBulletedIcon,
+                displayNav: true,
                 standardNav: false,
                 subRoutes: []
             },
@@ -159,6 +214,7 @@ const AppRoutes = [
                 description: 'Application updates',
                 component: Updates,
                 icon: FeedIcon,
+                displayNav: true,
                 standardNav: false,
                 subRoutes: []
             },
@@ -168,6 +224,7 @@ const AppRoutes = [
                 description: 'Log files',
                 component: Logs,
                 icon: DvrIcon,
+                displayNav: true,
                 standardNav: false,
                 subRoutes: []
             }
