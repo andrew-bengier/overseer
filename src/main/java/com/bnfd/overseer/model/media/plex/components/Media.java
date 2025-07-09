@@ -1,9 +1,12 @@
 package com.bnfd.overseer.model.media.plex.components;
 
 import jakarta.xml.bind.annotation.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.math.*;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,4 +26,6 @@ public class Media {
     private String videoResolution;
     @XmlAttribute(name = "container")
     private String container;
+    @XmlElement(name = "Part")
+    public List<Part> part;
 }

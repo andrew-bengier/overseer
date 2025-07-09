@@ -7,7 +7,10 @@ import com.bnfd.overseer.model.constants.MetadataType;
 import com.bnfd.overseer.model.constants.SettingType;
 import com.bnfd.overseer.model.media.plex.Directory;
 import com.bnfd.overseer.model.media.plex.Video;
+import com.bnfd.overseer.model.media.plex.components.Image;
 import com.bnfd.overseer.model.persistence.*;
+import com.bnfd.overseer.utils.ApiUtils;
+import com.bnfd.overseer.utils.FilenameUtils;
 import info.movito.themoviedbapi.model.collections.Part;
 import info.movito.themoviedbapi.model.movies.MovieDb;
 import info.movito.themoviedbapi.model.tv.season.TvSeasonDb;
@@ -711,8 +714,24 @@ public class OverseerMapper extends ModelMapper {
                 if (StringUtils.isNotBlank(mappingContext.getSource().getSummary())) {
                     media.addMetadata(new Metadata(null, MetadataType.SUMMARY.name(), mappingContext.getSource().getSummary()));
                 }
-                if (StringUtils.isNotBlank(mappingContext.getSource().getThumb())) {
-                    media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), mappingContext.getSource().getThumb()));
+//                if (StringUtils.isNotBlank(mappingContext.getSource().getThumb())) {
+//                    media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), mappingContext.getSource().getThumb()));
+//                }
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getImage())) {
+                    for (Image image : mappingContext.getSource().getImage()) {
+                        MetadataType imageType = ApiUtils.getMetadataType(image.getType());
+                        if (!ObjectUtils.isEmpty(imageType)) {
+                            media.addMetadata(new Metadata(null, imageType.name(), image.getUrl()));
+                        }
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(mappingContext.getSource().getMedia())) {
+                    if (CollectionUtils.isNotEmpty(mappingContext.getSource().getMedia().getFirst().getPart())) {
+                        String path = mappingContext.getSource().getMedia().getFirst().getPart().getFirst().getFile();
+                        if (StringUtils.isNotBlank(path)) {
+                            media.addMetadata(new Metadata(null, MetadataType.PATH.name(), FilenameUtils.getFolderPath(path)));
+                        }
+                    }
                 }
 
                 return media;

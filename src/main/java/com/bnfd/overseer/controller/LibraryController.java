@@ -2,10 +2,7 @@ package com.bnfd.overseer.controller;
 
 import com.bnfd.overseer.model.api.Library;
 import com.bnfd.overseer.model.api.Server;
-import com.bnfd.overseer.service.CollectionService;
-import com.bnfd.overseer.service.LibraryService;
-import com.bnfd.overseer.service.ServerService;
-import com.bnfd.overseer.service.ValidationService;
+import com.bnfd.overseer.service.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 @Slf4j
@@ -27,15 +25,26 @@ public class LibraryController {
     private final ServerService serverService;
     private final LibraryService libraryService;
     private final CollectionService collectionService;
+
+    // [TEST]
+    private final ImageAssetService imageAssetService;
+    private final FileArchiveService fileArchiveService;
     // endregion - Class Variables -
 
     // region - Constructors -
     @Autowired
-    public LibraryController(ValidationService validationService, ServerService serverService, LibraryService libraryService, CollectionService collectionService) {
+    public LibraryController(ValidationService validationService,
+                             ServerService serverService,
+                             LibraryService libraryService,
+                             CollectionService collectionService,
+                             ImageAssetService imageAssetService,
+                             FileArchiveService fileArchiveService) {
         this.validationService = validationService;
         this.serverService = serverService;
         this.libraryService = libraryService;
         this.collectionService = collectionService;
+        this.imageAssetService = imageAssetService;
+        this.fileArchiveService = fileArchiveService;
     }
     // endregion - Constructors -
 
@@ -121,7 +130,39 @@ public class LibraryController {
         Library library = libraryService.getLibraryById(libraryId);
 
         collectionService.processCheckCollections(server, library);
-        
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/{libraryId}/test/assetsArchive", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> processArchive(@PathVariable String serverId, @PathVariable String libraryId, @RequestParam(defaultValue = "false") boolean centerOverlay) throws Throwable {
+        log.info("Processing archive for - id [{}]", libraryId);
+
+        imageAssetService.testOverlay(centerOverlay);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{libraryId}/test/getMediaInfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getMediaInfo(@PathVariable String serverId, @PathVariable String libraryId, @RequestParam String mediaId) throws UnsupportedEncodingException {
+        Server server = serverService.getServerById(serverId);
+        Library library = libraryService.getLibraryById(libraryId);
+
+        return new ResponseEntity<>(collectionService.getMediaInfo(server, library, mediaId), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{libraryId}/test/checkArchiveEligible", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> checkArchiveEligible(@PathVariable String serverId, @PathVariable String libraryId) throws UnsupportedEncodingException {
+        Server server = serverService.getServerById(serverId);
+        Library library = libraryService.getLibraryById(libraryId);
+
+        return new ResponseEntity<>(libraryService.checkArchiveEligible(server, library), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/{libraryId}/test/archive", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> archive(@PathVariable String serverId, @PathVariable String libraryId, @RequestParam(defaultValue = "false") boolean centerOverlay) throws Throwable {
+        log.info("Processing archive for - id [{}]", libraryId);
+
+        fileArchiveService.archiveMedia();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

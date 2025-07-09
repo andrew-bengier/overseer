@@ -5,19 +5,18 @@ import com.bnfd.overseer.exception.OverseerException;
 import com.bnfd.overseer.exception.OverseerNoContentException;
 import com.bnfd.overseer.exception.OverseerNotFoundException;
 import com.bnfd.overseer.model.api.*;
-import com.bnfd.overseer.model.constants.MediaIdType;
-import com.bnfd.overseer.model.constants.SettingLevel;
-import com.bnfd.overseer.model.constants.SettingType;
+import com.bnfd.overseer.model.constants.*;
+import com.bnfd.overseer.model.media.plex.Directory;
+import com.bnfd.overseer.model.media.plex.MediaContainer;
+import com.bnfd.overseer.model.media.plex.Video;
 import com.bnfd.overseer.model.persistence.*;
 import com.bnfd.overseer.repository.ActionRepository;
 import com.bnfd.overseer.repository.LibraryRepository;
 import com.bnfd.overseer.repository.SettingRepository;
 import com.bnfd.overseer.service.api.media.server.MediaServerApiService;
 import com.bnfd.overseer.service.api.media.server.PlexMediaServerApiService;
-import com.bnfd.overseer.utils.ActionUtils;
-import com.bnfd.overseer.utils.ApiUtils;
-import com.bnfd.overseer.utils.Constants;
-import com.bnfd.overseer.utils.SettingUtils;
+import com.bnfd.overseer.service.api.web.TmdbWebApiService;
+import com.bnfd.overseer.utils.*;
 import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -33,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.bnfd.overseer.model.constants.ApiKeyType.PLEX;
 
@@ -48,6 +48,7 @@ public class LibraryService {
 
     private final List<MediaServerApiService> mediaServerApiServices;
     private final ActionRepository actionRepository;
+    private final ApiKeyService apiKeyService;
     // endregion - Class Variables -
 
     // region - Constructors -
@@ -56,12 +57,14 @@ public class LibraryService {
                           LibraryRepository libraryRepository,
                           SettingRepository settingRepository,
                           List<MediaServerApiService> mediaServerApiServices,
-                          ActionRepository actionRepository) {
+                          ActionRepository actionRepository,
+                          ApiKeyService apiKeyService) {
         this.overseerMapper = overseerMapper;
         this.libraryRepository = libraryRepository;
         this.settingRepository = settingRepository;
         this.mediaServerApiServices = mediaServerApiServices;
         this.actionRepository = actionRepository;
+        this.apiKeyService = apiKeyService;
     }
     // endregion - Constructors -
 
@@ -148,6 +151,50 @@ public class LibraryService {
 
         return overseerMapper.map(entities, new TypeToken<List<Library>>() {
         }.getType());
+    }
+
+    public List<String> checkArchiveEligible(Server server, Library library) throws UnsupportedEncodingException {
+        ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
+
+        MediaServerApiService service;
+        switch (apiKey.getName()) {
+            case PLEX ->
+                    service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+            default -> throw new OverseerException("Error - service for server type not currently supported");
+        }
+
+        MediaContainer container = service.getMedia(apiKey, library.getReferenceId());
+
+        // check library type (movie/show)
+        return switch (LibraryType.findByName(library.getType())) {
+            case MOVIE -> {
+                // Movies
+                container.getVideos()
+                        .removeIf(video -> ValidationUtils.isArchived(video.getCollections()) || DateUtils.isArchiveEligible(video.getAddedAt(), video.getLastViewedAt()));
+
+                yield container.getVideos().stream().map(Video::getTitle).collect(Collectors.toList());
+            }
+            case SHOW -> {
+                // Series
+                container.getDirectories()
+                        .removeIf(show -> ValidationUtils.isArchived(show.getCollections()) || DateUtils.isArchiveEligible(show.getAddedAt(), show.getLastViewedAt()));
+
+                // Check web api service here for series status (only removing if status in ('ended', 'cancelled')
+                apiKeyService.getAllApiKeysByName(ApiKeyType.TMDB).stream().findFirst().ifPresent(tmdbKey -> {
+                    TmdbWebApiService tmdbWebApiService = new TmdbWebApiService(overseerMapper, apiKeyService);
+                    for (Directory series : container.getDirectories()) {
+                        Media seriesData = tmdbWebApiService.getSeries(series.getRatingKey());
+                        seriesData.getMetadata().stream().filter(metadata -> metadata.getName().equals(MetadataType.STATUS.name())).findFirst().ifPresent(metadata -> {
+                            container.getDirectories()
+                                    .removeIf(show -> !(metadata.getValue().equalsIgnoreCase("ended") || metadata.getValue().equalsIgnoreCase("cancelled")));
+                        });
+                    }
+                });
+
+                yield container.getDirectories().stream().map(Directory::getTitle).collect(Collectors.toList());
+            }
+            default -> throw new OverseerException("Error - library type not currently supported");
+        };
     }
     // endregion - READ -
 

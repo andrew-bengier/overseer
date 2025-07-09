@@ -141,7 +141,7 @@ public class CollectionService {
             // check if collection exists -
             // - if not, create
             // - else track (need to match on collection name...)
-            CollectionEntity currentCollection = mediaService.getCollections(apiKey, libraryId, Collections.emptyList(), true)
+            CollectionEntity currentCollection = mediaService.getCollections(apiKey, libraryId, true)
                     .stream()
                     .filter(collection -> collection.getName().equals(collectionEntity.getName()))
                     .findFirst()
@@ -224,6 +224,18 @@ public class CollectionService {
 
         return overseerMapper.map(entity, Collection.class);
     }
+
+    // TODO: WIP 2025-06-24
+//    public List<Collection> backupCollections(Server server, Library library, boolean resyncFromBackup) {
+//        // This method is to check that all collections are backed up (via a JSON file) or resync the db from the backup file
+//        if (resyncFromBackup) {
+//
+//        } else {
+//
+//        }
+//
+//        return null;
+//    }
     // endregion - CREATE -
 
     // region - GET -
@@ -242,14 +254,6 @@ public class CollectionService {
         List<String> trackedExternalIds = tracked.stream().map(CollectionEntity::getExternalId).toList();
 
         ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
-
-        MediaServerApiService service;
-        switch (apiKey.getName()) {
-            case PLEX ->
-                    service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
-            default -> throw new OverseerException("Error - service for server type not currently supported");
-        }
-
         String trackingTypeRequest = CollectionUtils.isEmpty(options) ? CollectionTrackingType.ALL_INFO.name() :
                 options.getOrDefault("trackingType", CollectionTrackingType.ALL_INFO.name());
         // TODO: update here to see if tracked is the same as what's currently in mediaServer
@@ -265,52 +269,53 @@ public class CollectionService {
             }
             case CollectionTrackingType.TRACKED: {
                 // This will retrieve just the collections that are tracked via overseer (includes media)
-                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), trackedExternalIds, false);
-                if (CollectionUtils.isEmpty(mediaServerCollections)) {
-                    throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
-                } else {
-                    return overseerMapper.map(mediaServerCollections, new TypeToken<List<Collection>>() {
-                    }.getType());
+                List<Collection> mediaServerCollections = getCollectionsFromMediaServer(apiKey, library, true);
+
+                if (!CollectionUtils.isEmpty(trackedExternalIds)) {
+                    mediaServerCollections.removeIf(collection -> !trackedExternalIds.contains(collection.getReferenceId()));
                 }
+
+                return mediaServerCollections;
             }
             case CollectionTrackingType.UNTRACKED_INFO: {
                 // This will retrieve just the collections that are NOT tracked via overseer (information only)
-                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), Collections.emptyList(), false);
-                if (CollectionUtils.isEmpty(mediaServerCollections)) {
-                    throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
-                } else {
-                    mediaServerCollections.removeIf(collection -> trackedExternalIds.contains(collection.getExternalId()));
+                List<Collection> mediaServerCollections = getCollectionsFromMediaServer(apiKey, library, false);
 
-                    return overseerMapper.map(mediaServerCollections, new TypeToken<List<Collection>>() {
-                    }.getType());
+                if (!CollectionUtils.isEmpty(trackedExternalIds)) {
+                    mediaServerCollections.removeIf(collection -> trackedExternalIds.contains(collection.getReferenceId()));
                 }
+
+                return mediaServerCollections;
             }
             case CollectionTrackingType.UNTRACKED: {
                 // This will retrieve just the collections that are NOT tracked via overseer (includes media)
-                List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), Collections.emptyList(), true);
-                if (CollectionUtils.isEmpty(mediaServerCollections)) {
-                    throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
-                } else {
-                    mediaServerCollections.removeIf(collection -> StringUtils.isNotBlank(collection.getExternalId()) && trackedExternalIds.contains(collection.getExternalId()));
+                List<Collection> mediaServerCollections = getCollectionsFromMediaServer(apiKey, library, true);
 
-                    return overseerMapper.map(mediaServerCollections, new TypeToken<List<Collection>>() {
-                    }.getType());
+                if (!CollectionUtils.isEmpty(trackedExternalIds)) {
+                    mediaServerCollections.removeIf(collection -> StringUtils.isNotBlank(collection.getReferenceId()) || trackedExternalIds.contains(collection.getReferenceId()));
                 }
+
+                return mediaServerCollections;
             }
             case CollectionTrackingType.ALL: {
                 // This will retrieve all collections (tracked and untracked) - including media
-                break;
+                List<Collection> mediaServerCollections = getCollectionsFromMediaServer(apiKey, library, true);
+
+//                mediaServerCollections.forEach(collection -> {
+//                    collection.setMedia(new HashSet<>(getCollectionMedia(collection.getReferenceId())));
+//                });
+
+                return mediaServerCollections;
             }
             case CollectionTrackingType.ALL_INFO: {
                 // This will retrieve all collections (tracked and untracked) - information only - is also fallthrough to default
+                return getCollectionsFromMediaServer(apiKey, library, false);
             }
             default: {
 //                log.error("Collection Option [{}] is invalid", options);
                 return Collections.emptyList();
             }
         }
-
-        return Collections.emptyList();
     }
     // endregion - GET -
 
@@ -440,6 +445,23 @@ public class CollectionService {
 
         return collectionSettings;
     }
+
+    protected List<Collection> getCollectionsFromMediaServer(ApiKeyEntity apiKey, Library library, boolean includeMedia) {
+        MediaServerApiService service;
+        switch (apiKey.getName()) {
+            case PLEX ->
+                    service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+            default -> throw new OverseerException("Error - service for server type not currently supported");
+        }
+
+        List<CollectionEntity> mediaServerCollections = service.getCollections(apiKey, library.getReferenceId(), includeMedia);
+        if (CollectionUtils.isEmpty(mediaServerCollections)) {
+            throw new OverseerNoContentException(String.format("No collections found for provided criteria (libraryId: %s)", library.getId()));
+        } else {
+            return overseerMapper.map(mediaServerCollections, new TypeToken<List<Collection>>() {
+            }.getType());
+        }
+    }
     // endregion - Protected Methods -
 
     // [TEST]
@@ -448,5 +470,24 @@ public class CollectionService {
 //        return tmdbWebApiService.getMediaFromCollection(collectionId);
         WebApiService tmdbWebApiService = ApiUtils.retrieveWebApiService(TMDB, TmdbWebApiService.class, webApiServices, true);
         return List.of(tmdbWebApiService.getSeries(collectionId));
+    }
+
+    public Media getMediaInfo(Server server, Library library, String mediaId) throws UnsupportedEncodingException {
+        ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
+
+        MediaServerApiService service;
+        switch (apiKey.getName()) {
+            case PLEX ->
+                    service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
+            default -> throw new OverseerException("Error - service for server type not currently supported");
+        }
+
+        Media media = service.getMedia(apiKey, library.getReferenceId(), mediaId);
+//        media.getMetadata()
+//                .stream()
+//                .filter(metadata -> metadata.getName().equalsIgnoreCase(MetadataType.PATH.name()))
+//                .findFirst()
+//                .ifPresent(meta -> log.info(FilenameUtils.getFolderPath(meta.getValue())));
+        return media;
     }
 }

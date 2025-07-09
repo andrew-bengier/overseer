@@ -4,6 +4,7 @@ import com.bnfd.overseer.exception.OverseerPreConditionRequiredException;
 import com.bnfd.overseer.model.constants.ApiKeyType;
 import com.bnfd.overseer.model.constants.BuilderType;
 import com.bnfd.overseer.model.constants.MediaIdType;
+import com.bnfd.overseer.model.constants.MetadataType;
 import com.bnfd.overseer.service.api.media.server.MediaServerApiService;
 import com.bnfd.overseer.service.api.web.WebApiService;
 import com.bnfd.overseer.service.builder.BuilderService;
@@ -46,5 +47,15 @@ public class ApiUtils {
 
     public static String getMediaId(String externalId) {
         return externalId.substring(externalId.indexOf("_") + 1);
+    }
+
+    public static MetadataType getMetadataType(String type) {
+        for (MetadataType metadataType : MetadataType.values()) {
+            if (type.toLowerCase().contains(metadataType.name().toLowerCase())) {
+                return metadataType;
+            }
+        }
+
+        return null;
     }
 }

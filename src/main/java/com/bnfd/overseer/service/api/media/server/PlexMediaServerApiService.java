@@ -15,6 +15,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
+import java.io.*;
 import java.net.*;
 import java.util.*;
 
@@ -67,14 +65,19 @@ public class PlexMediaServerApiService implements MediaServerApiService {
 
     // region - Collections -
     // TODO: reference here to get collections and tell if tracked or not - by ratingKey = externalId
-    public List<CollectionEntity> getCollections(ApiKeyEntity apiKey, String libraryId, List<String> collectionExternalIds, boolean includeMedia) {
+    public List<CollectionEntity> getCollections(ApiKeyEntity apiKey, String libraryId, boolean includeMedia) {
         StringBuilder requestUrl = new StringBuilder();
         requestUrl.append(apiKey.getUrl())
                 .append(PLEX_LIBRARY_COLLECTIONS_URL.replace("{referenceId}", libraryId));
+        Map<String, String> params = Map.of(
+                "includeGuids", "1"
+                // [TEST]
+//                ,"limit", "3"
+        );
 
         List<CollectionEntity> collections = new ArrayList<>();
         try {
-            MediaContainer mediaContainer = plexConnection(requestUrl.toString(), apiKey.getKey(), Collections.emptyMap(), Collections.emptyList(), HttpMethod.GET);
+            MediaContainer mediaContainer = plexConnection(requestUrl.toString(), apiKey.getKey(), params, Collections.emptyList(), HttpMethod.GET);
 
             // TODO: directory to collection, then get videos for each and convert to media (builder custom if not tracked)
 
@@ -96,10 +99,6 @@ public class PlexMediaServerApiService implements MediaServerApiService {
         } catch (IOException | JAXBException | URISyntaxException exception) {
             log.error(exception.getMessage());
             return Collections.emptyList();
-        }
-
-        if (!CollectionUtils.isEmpty(collectionExternalIds)) {
-            collections.removeIf(collection -> !collectionExternalIds.contains(collection.getExternalId()));
         }
 
         return collections;
@@ -221,15 +220,19 @@ public class PlexMediaServerApiService implements MediaServerApiService {
             MediaContainer results = plexConnection(requestUrl.toString(), apiKey.getKey(), params, Collections.emptyList(), HttpMethod.GET);
 
             List<Media> media = new ArrayList<>();
-            for (Map.Entry<MediaIdType, Set<String>> entry : mediaIds.entrySet()) {
-                for (String id : entry.getValue()) {
-                    String guid = entry.getKey().prefix + id;
-                    Optional<Video> filtered = results.getVideos().stream()
-                            .filter(video -> PlexUtils.guidsContainFilter(video.getGuids(), guid))
-                            .findFirst();
+            if (MapUtils.isNotEmpty(mediaIds)) {
+                for (Map.Entry<MediaIdType, Set<String>> entry : mediaIds.entrySet()) {
+                    for (String id : entry.getValue()) {
+                        String guid = entry.getKey().prefix + id;
+                        Optional<Video> filtered = results.getVideos().stream()
+                                .filter(video -> PlexUtils.guidsContainFilter(video.getGuids(), guid))
+                                .findFirst();
 
-                    filtered.ifPresent(video -> media.add(overseerMapper.map(video, Media.class)));
+                        filtered.ifPresent(video -> media.add(overseerMapper.map(video, Media.class)));
+                    }
                 }
+            } else {
+                results.getVideos().forEach(video -> media.add(overseerMapper.map(video, Media.class)));
             }
 
             return media;
@@ -237,6 +240,44 @@ public class PlexMediaServerApiService implements MediaServerApiService {
             // TODO: proper error handling here
             log.error(exception.getMessage());
             return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public MediaContainer getMedia(ApiKeyEntity apiKey, String libraryId) {
+        StringBuilder requestUrl = new StringBuilder();
+        requestUrl.append(apiKey.getUrl())
+                .append(PLEX_LIBRARY_URL.replace("{referenceId}", libraryId))
+                .append(PLEX_ALL_URL);
+        Map<String, String> params = Map.of(
+                "includeGuids", "1",
+                "includeDetails", "1",
+                "includeAdvanced", "1",
+                "limit", "3");
+
+        try {
+            return plexConnection(requestUrl.toString(), apiKey.getKey(), params, Collections.emptyList(), HttpMethod.GET);
+        } catch (IOException | JAXBException | URISyntaxException exception) {
+            // TODO: proper error handling here
+            log.error(exception.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public Media getMedia(ApiKeyEntity apiKey, String libraryId, String mediaId) throws UnsupportedEncodingException {
+        StringBuilder requestUrl = new StringBuilder();
+        requestUrl.append(apiKey.getUrl())
+                .append(PLEX_MEDIA_ITEM_URL.replace("{referenceId}", mediaId));
+
+        try {
+            MediaContainer results = plexConnection(requestUrl.toString(), apiKey.getKey(), Collections.emptyMap(), Collections.emptyList(), HttpMethod.GET);
+
+            return overseerMapper.map(results.getVideos().getFirst(), Media.class);
+        } catch (IOException | JAXBException | URISyntaxException exception) {
+            // TODO: proper error handling here
+            log.error(exception.getMessage());
+            return null;
         }
     }
 

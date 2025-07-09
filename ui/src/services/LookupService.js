@@ -21,6 +21,15 @@ export async function getSettingTypes() {
     return await axios.get(BASE_URL + '/settings/types', {headers: generateJsonHeaders()});
 }
 
+export async function updateSettingDefaults(level = 'default', settings) {
+    return await axios.put(BASE_URL + '/settings/defaults',
+        settings,
+        {
+            headers: generateJsonHeaders(),
+            params: {level: level}
+        });
+}
+
 // endregion - Settings (Defaults) -
 
 // region - Actions -

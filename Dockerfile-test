@@ -1,0 +1,23 @@
+# 1: Build the React/Node UI
+FROM node:24-alpine AS ui-builder
+WORKDIR /app/ui
+COPY ui/package.json ui/package-lock.json ./
+RUN npm install
+COPY ui/ ./
+RUN npm run build
+
+# 2: Build the Spring Boot API
+FROM openjdk:21-jdk AS api-builder
+WORKDIR /app/api
+COPY pom.xml mvnw .mvn ./
+COPY src ./src
+RUN ./mvnw clean install -DskipTests
+
+# 3: Final Docker Image
+FROM openjdk:21-jdk
+WORKDIR /app
+COPY --from=ui-builder /app/ui/target/*.jar app.jar
+COPY --from=api-builder /app/api/build/ static/
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

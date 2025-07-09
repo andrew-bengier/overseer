@@ -98,6 +98,7 @@ public class TmdbWebApiService implements WebApiService {
             media.addMetadata(new Metadata(null, MetadataType.TAGLINE.name(), series.getTagline()));
             media.addMetadata(new Metadata(null, MetadataType.RELEASE_DATE.name(), series.getFirstAirDate()));
             media.addMetadata(new Metadata(null, MetadataType.POSTER.name(), series.getPosterPath()));
+            media.addMetadata(new Metadata(null, MetadataType.STATUS.name(), series.getStatus().toUpperCase()));
             media.addMetadata(new Metadata(null, MetadataType.EXTERNAL_ID.name(), MediaIdType.IMDB.name() + "_" + series.getExternalIds().getImdbId()));
             media.addMetadata(new Metadata(null, MetadataType.EXTERNAL_ID.name(), MediaIdType.TVDB.name() + "_" + series.getExternalIds().getTvdbId()));
 

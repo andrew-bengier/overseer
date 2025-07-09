@@ -8,9 +8,13 @@ public enum MetadataType {
     TAGLINE,
     RELEASE_DATE,
     POSTER,
+    BACKGROUND,
+    LOGO,
     NUMBER,
     COUNT,
-    EXTERNAL_ID;
+    STATUS,
+    EXTERNAL_ID,
+    PATH;
 
     public static MetadataType findByName(String name) {
         MetadataType result = null;

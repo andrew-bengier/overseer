@@ -1,7 +1,7 @@
 package com.bnfd.overseer.utils;
 
-import java.text.*;
-import java.util.regex.*;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
 
 public class FilenameUtils {
     private static final Pattern INVALID_FILENAME_CHARS = Pattern.compile("[\\\\/:*?\"<> |\\x00-\\x1F]");
@@ -27,5 +27,9 @@ public class FilenameUtils {
         }
 
         return cleanFilename;
+    }
+
+    public static String getFolderPath(String filename) {
+        return org.apache.commons.io.FilenameUtils.normalizeNoEndSeparator(org.apache.commons.io.FilenameUtils.getFullPath(filename).substring(org.apache.commons.io.FilenameUtils.getPrefixLength(filename) - 1));
     }
 }

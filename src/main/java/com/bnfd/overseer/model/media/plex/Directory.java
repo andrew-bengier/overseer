@@ -1,5 +1,6 @@
 package com.bnfd.overseer.model.media.plex;
 
+import com.bnfd.overseer.model.media.plex.components.Collection;
 import com.bnfd.overseer.model.media.plex.components.Genre;
 import jakarta.xml.bind.annotation.*;
 import lombok.AllArgsConstructor;
@@ -46,6 +47,10 @@ public class Directory {
     public String duration;
     @XmlAttribute(name = "originallyAvailableAt")
     public String originallyAvailableAt;
+    @XmlAttribute(name = "addedAt")
+    public Long addedAt;
+    @XmlAttribute(name = "lastViewedAt")
+    public Long lastViewedAt;
     @XmlAttribute(name = "leafCount")
     public String leafCount;
     @XmlAttribute(name = "childCount")
@@ -55,4 +60,7 @@ public class Directory {
 
     @XmlElement(name = "Genre")
     public List<Genre> genres;
+
+    @XmlElement(name = "Collection")
+    public List<Collection> collections;
 }

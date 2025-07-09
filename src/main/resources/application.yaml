@@ -1,6 +1,7 @@
 spring:
   application:
     name: Overseer
+    assetDirectory: /Users/abengier/projects/bnfd/personal/overseer/assets/
   banner:
     location: classpath:banner.txt
   datasource:

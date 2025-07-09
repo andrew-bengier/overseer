@@ -47,6 +47,10 @@ public class Video {
     public Long duration;
     @XmlAttribute(name = "originallyAvailableAt")
     public String originallyAvailableAt;
+    @XmlAttribute(name = "addedAt")
+    public Long addedAt;
+    @XmlAttribute(name = "lastViewedAt")
+    public Long lastViewedAt;
 
     @XmlAttribute(name = "parentRatingKey")
     public String parentRatingKey;
@@ -55,6 +59,8 @@ public class Video {
 
     @XmlElement(name = "Media")
     public List<Media> media;
+    @XmlElement(name = "Image")
+    public List<Image> image;
     @XmlElement(name = "Genre")
     public List<Genre> genre;
     @XmlElement(name = "Director")
@@ -71,6 +77,8 @@ public class Video {
     public List<Collection> collections;
     @XmlElement(name = "Field")
     public List<Field> field;
+    @XmlElement(name = "Label")
+    public List<Label> label;
 
     // region -- Overridden Methods --
     @Override

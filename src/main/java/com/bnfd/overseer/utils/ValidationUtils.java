@@ -1,13 +1,16 @@
 package com.bnfd.overseer.utils;
 
 
+import com.bnfd.overseer.model.media.plex.components.Collection;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 public class ValidationUtils {
     public static boolean isEmpty(Object object) {
@@ -49,6 +52,14 @@ public class ValidationUtils {
             return true;
         } catch (IllegalArgumentException e) {
             return false;
+        }
+    }
+
+    public static boolean isArchived(List<Collection> collections) {
+        if (CollectionUtils.isEmpty(collections)) {
+            return false;
+        } else {
+            return collections.stream().anyMatch(collection -> collection.getTag().equalsIgnoreCase("archive"));
         }
     }
 }
