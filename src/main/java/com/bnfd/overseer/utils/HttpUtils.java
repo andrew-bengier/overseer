@@ -2,6 +2,8 @@ package com.bnfd.overseer.utils;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -43,5 +45,15 @@ public class HttpUtils {
         }
 
         return url;
+    }
+
+    public static <T> HttpHeaders generateHeaders(Page<T> response) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Total-Count", String.valueOf(response.getTotalElements()));
+        headers.add("X-Total-Pages", String.valueOf(response.getTotalPages()));
+        headers.add("X-Current-Page", String.valueOf(response.getNumber()));
+        headers.add("X-Page-Size", String.valueOf(response.getSize()));
+
+        return headers;
     }
 }

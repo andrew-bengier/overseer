@@ -1,3 +1,19 @@
+Workflow:
+
+- call to check for servers (getServers)
+-
+    - add server (include checking for libraries) (addServer)
+-
+    -
+        - or the sync and add libraries (resyncServer)
+- call for library (including collections)
+-
+    - sync collections -> if not tracked currently show potential and how to make tracked
+- show collections
+-
+    - tracked and not tracked
+-
+
 -- Libraries
 -- Collections
 -- visibility (sort top or bottom)

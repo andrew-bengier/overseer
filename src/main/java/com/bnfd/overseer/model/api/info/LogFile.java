@@ -15,6 +15,8 @@ public class LogFile {
     // region - Class Variables -
     @Schema(name = "fileName", example = "OverseerApi_log.out", description = "Log file name (with extension)")
     private String fileName;
+    @Schema(name = "created", example = "2025-02-24T08\\:59\\:17-0500", description = "Time log was was created", format = "ISO-8601")
+    private Instant created;
     @Schema(name = "lastUpdated", example = "2025-02-24T08\\:59\\:17-0500", description = "Time log was last updated", format = "ISO-8601")
     private Instant lastUpdated;
     @Schema(name = "path", description = "Log file path (for download)")

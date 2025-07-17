@@ -14,6 +14,10 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,14 +36,36 @@ public class LogService {
     }
     // endregion - Constructors -
 
-    public List<LogFile> getAllLogFiles() {
+    public List<LogFile> getAllLogFiles(Instant start, Instant end) {
         List<LogFile> files = new ArrayList<>();
         try {
             File logFolder = ResourceUtils.getFile("file:" + logLocation);
             log.info(logFolder.getPath());
 
             FileUtils.listFiles(logFolder, null, true).forEach(file -> {
-                files.add(new LogFile(file.getName(), new Date(file.lastModified()).toInstant(), file.getPath()));
+                try {
+                    BasicFileAttributes attributes = Files.readAttributes(Path.of(file.getPath()), BasicFileAttributes.class);
+                    Instant created = attributes.creationTime().toInstant();
+                    log.info(file.getPath() + " created: " + created);
+
+                    if (start != null && end != null) {
+                        if (created.isAfter(start) && created.isBefore(end)) {
+                            files.add(new LogFile(file.getName(), new Date(file.lastModified()).toInstant(), attributes.creationTime().toInstant(), file.getPath()));
+                        }
+                    } else if (start != null) {
+                        if (created.isAfter(start)) {
+                            files.add(new LogFile(file.getName(), new Date(file.lastModified()).toInstant(), attributes.creationTime().toInstant(), file.getPath()));
+                        }
+                    } else if (end != null) {
+                        if (created.isBefore(end)) {
+                            files.add(new LogFile(file.getName(), new Date(file.lastModified()).toInstant(), attributes.creationTime().toInstant(), file.getPath()));
+                        }
+                    } else {
+                        files.add(new LogFile(file.getName(), new Date(file.lastModified()).toInstant(), attributes.creationTime().toInstant(), file.getPath()));
+                    }
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
             });
         } catch (IOException e) {
             log.error(e.getMessage());

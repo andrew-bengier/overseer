@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -133,7 +134,11 @@ public class ApiKeyController {
         if (StringUtils.isBlank(requestParams.get("name"))) {
             throw new OverseerBadRequestException(List.of("Missing search param - name"));
         }
+
         ApiKeyType apiKeyType = ApiKeyType.valueOf(requestParams.get("name").toUpperCase());
+        if (ObjectUtils.isEmpty(apiKeyType)) {
+            throw new OverseerBadRequestException(List.of("Invalid search param - name"));
+        }
 
         return new ResponseEntity<>(apiKeyService.getAllApiKeysByName(apiKeyType), HttpStatus.OK);
     }
@@ -161,7 +166,7 @@ public class ApiKeyController {
             description = "Get ApiKey By Id"
     )
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getApiKeyById(@PathVariable String id) {
+    public ResponseEntity<?> getApiKeyById(@PathVariable(name = "id") String id) {
         log.info(String.format("Retrieving api key - id [%s]", id));
 
         return new ResponseEntity<>(apiKeyService.getApiKeyById(id), HttpStatus.OK);
