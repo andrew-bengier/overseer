@@ -1,36 +1,39 @@
 import React from "react";
-import {useLocation, useNavigate} from "react-router-dom";
 import {Box, Divider, Drawer, List} from "@mui/material";
 import ClickAwayListener from '@mui/material/ClickAwayListener';
-import {scrubRoutePath} from "../../../utils/stringUtils";
 import SidenavList from "./SidenavList";
 import PropTypes from "prop-types";
 import {navRoute} from "../../../routes/AppRoutes";
 import useScreenSize from "../../../hooks/useScreenSize";
+import {useLocation, useNavigate} from "react-router-dom";
+import {scrubRoutePath} from "../../../utils/stringUtils";
 
 function Sidenav({open, navRoutes, toggleSidenav}) {
     const isMobile = useScreenSize(window.width);
     const navigate = useNavigate();
     const location = useLocation();
     const [visible, setVisible] = React.useState(open);
-    const [subRoutesOpen, setSubRoutesOpen] = React.useState([]);
+    const [openRoute, setOpenRoute] = React.useState('');
 
     React.useEffect(() => {
         setVisible(open);
     }, [open]);
 
-    const handleRouteClick = (route) => {
-        let updatedRoutes = navRoutes.map((navRoute) => {
-            if (navRoute.name === route.name) {
-                return {name: navRoute.name, open: true};
-            } else {
-                return {name: navRoute.name, open: false};
-            }
-        });
+    const handleSidenavToggle = () => {
+        if (isMobile && visible) {
+            setVisible(false);
+            toggleSidenav();
+        }
+    }
 
-        setSubRoutesOpen(updatedRoutes);
-
-        navigate('/' + scrubRoutePath(route.name));
+    const handleRouteClick = (route, subRoute) => {
+        if (subRoute === undefined) {
+            setOpenRoute(route.name);
+            navigate('/' + scrubRoutePath(route.name));
+        } else {
+            setOpenRoute(route.name);
+            navigate('/' + scrubRoutePath(route.name) + '/' + scrubRoutePath(subRoute.name))
+        }
     }
 
     const isCurrentLocation = (route) => {
@@ -38,13 +41,6 @@ function Sidenav({open, navRoutes, toggleSidenav}) {
             return location.pathname.toLowerCase().includes('/' + scrubRoutePath(route.name).toLowerCase()) || location.pathname.toLowerCase().includes('/' + scrubRoutePath(route.key).toLowerCase())
         } else {
             return false;
-        }
-    }
-
-    const handleSidenavToggle = () => {
-        if (isMobile && visible) {
-            setVisible(false);
-            toggleSidenav();
         }
     }
 
@@ -60,23 +56,21 @@ function Sidenav({open, navRoutes, toggleSidenav}) {
                     flexShrink: 0,
                     "& .MuiDrawer-paper": {
                         marginTop: '64px'
-                        // height: "100%"
                     }
                 }}
             >
-                {/*<Toolbar/>*/}
                 <Box sx={{paddingTop: 0}}>
                     <List sx={{width: '240px'}}>
                         {navRoutes.filter(route => route.displayNav && route.standardNav).map((route) => (
-                            <SidenavList key={route.key} route={route} handleRouteClick={handleRouteClick}
-                                         checkCurrent={isCurrentLocation}/>
+                            <SidenavList key={route.key} route={route} openRoute={openRoute}
+                                         isCurrentLocation={isCurrentLocation} handleRouteClick={handleRouteClick}/>
                         ))}
                     </List>
                     <Divider/>
                     <List sx={{width: '240px'}}>
                         {navRoutes.filter(route => route.displayNav && !route.standardNav).map((route) => (
-                            <SidenavList key={route.key} route={route} handleRouteClick={handleRouteClick}
-                                         checkCurrent={isCurrentLocation}/>
+                            <SidenavList key={route.key} route={route} openRoute={openRoute}
+                                         isCurrentLocation={isCurrentLocation} handleRouteClick={handleRouteClick}/>
                         ))}
                     </List>
                 </Box>

@@ -23,14 +23,14 @@ function Status() {
                         ...response.data.gitInfo
                     })
                 }
-            )
+            );
+            // TODO: add disk space info here
         };
 
         fetchInfo().then();
-
-
     }, []);
 
+    // TODO: add wiki here
     return (
         <React.Fragment>
             {buildInfo && (

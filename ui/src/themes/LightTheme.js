@@ -5,7 +5,8 @@ import {lightBlue, red} from '@mui/material/colors';
 const LightTheme = createTheme({
     palette: {
         primary: {
-            main: '#67C5AC'
+            main: '#67C5AC',
+            light: '#CBEBE3'
         },
         secondary: {
             main: '#6780C5',
@@ -28,6 +29,13 @@ const LightTheme = createTheme({
         background: "white"
     },
     components: {
+        MuiListItemIcon: {
+            styleOverrides: {
+                root: {
+                    minWidth: 24,
+                }
+            }
+        },
         MuiPaper: {
             styleOverrides: {
                 root: {

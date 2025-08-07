@@ -1,11 +1,9 @@
 package com.bnfd.overseer.controller;
 
-import com.bnfd.overseer.exception.OverseerConflictException;
 import com.bnfd.overseer.model.api.Server;
 import com.bnfd.overseer.service.ServerService;
 import com.bnfd.overseer.service.ValidationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,11 +37,7 @@ public class ServerController {
 
         validationService.validateServer(server, null, true);
 
-        try {
-            return new ResponseEntity<>(serverService.addServer(server, includeLibraries), HttpStatus.OK);
-        } catch (PersistenceException exception) {
-            throw new OverseerConflictException(exception.getMessage());
-        }
+        return new ResponseEntity<>(serverService.addServer(server, includeLibraries), HttpStatus.OK);
     }
 
     // TODO: "/{serverId}/process"

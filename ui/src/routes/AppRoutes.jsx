@@ -5,27 +5,31 @@ import ComputerIcon from '@mui/icons-material/Computer';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import FeedIcon from '@mui/icons-material/Feed';
-import ScheduleIcon from '@mui/icons-material/Schedule';
 import DvrIcon from '@mui/icons-material/Dvr';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import ApiOutlinedIcon from '@mui/icons-material/ApiOutlined';
 import DisplaySettingsOutlinedIcon from '@mui/icons-material/DisplaySettingsOutlined';
-import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import Settings from "./Settings/Settings";
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import LinkIcon from '@mui/icons-material/Link';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+
 import Test from "./Test/Test";
+import CalendarView from "./Calendar/CalendarView";
+
+import Settings from "./Settings/Settings";
+import MediaManagement from "./Settings/subRoutes/MediaManagement";
+import Connections from "./Settings/subRoutes/Connections";
+import Notifications from "./Settings/subRoutes/Notifications";
 import General from "./Settings/subRoutes/General";
 import UI from "./Settings/subRoutes/UI";
-import Updates from "./System/subRoutes/Updates";
+
 import Status from "./System/subRoutes/Status";
-import Tasks from "./System/subRoutes/Tasks";
-import Logs from "./System/subRoutes/Logs";
 import Events from "./System/subRoutes/Events";
-import Apis from "./Settings/subRoutes/Apis";
-import Servers from "./Servers/Servers";
+import Updates from "./System/subRoutes/Updates";
+import Logs from "./System/subRoutes/Logs";
 import Collections from "./Collections/Collections";
-import Server from "./Servers/Server";
 import Collection from "./Collections/Collection";
 import Libraries from "./Libraries/Libraries";
 import Library from "./Libraries/Library";
@@ -46,7 +50,6 @@ export const routePaths = {
     all: '/*',
     separator: '/',
     nested: '/:id',
-    Settings: '/Settings'
 };
 
 // TODO: add option for overriding parent component with redirect to default child
@@ -61,28 +64,6 @@ const AppRoutes = [
         displayNav: true,
         standardNav: true,
         subRoutes: []
-    },
-    {
-        name: 'Servers',
-        key: 'Servers',
-        description: 'Servers',
-        component: Servers,
-        icon: StorageOutlinedIcon,
-        displayNav: true,
-        standardNav: true,
-        subRoutes: [
-            {
-                name: 'Server',
-                key: 'Server',
-                description: 'Server',
-                component: Server,
-                icon: StorageOutlinedIcon,
-                displayNav: false,
-                standardNav: true,
-                nested: true,
-                subRoutes: []
-            }
-        ]
     },
     {
         name: 'Libraries',
@@ -129,6 +110,16 @@ const AppRoutes = [
         ]
     },
     {
+        name: 'Calendar',
+        key: 'Calendar',
+        description: 'Calendar',
+        component: CalendarView,
+        icon: CalendarMonthOutlinedIcon,
+        displayNav: true,
+        standardNav: true,
+        subRoutes: []
+    },
+    {
         name: 'Settings',
         key: 'Settings',
         description: 'Application settings',
@@ -137,6 +128,36 @@ const AppRoutes = [
         displayNav: true,
         standardNav: false,
         subRoutes: [
+            {
+                name: 'Media Management',
+                key: 'MediaManagement',
+                description: 'Management of media including',
+                component: MediaManagement,
+                icon: FolderOpenIcon,
+                displayNav: true,
+                standardNav: true,
+                subRoutes: []
+            },
+            {
+                name: 'Connections',
+                key: 'Connections',
+                description: 'Connections to external services',
+                component: Connections,
+                icon: LinkIcon,
+                displayNav: true,
+                standardNav: true,
+                subRoutes: []
+            },
+            {
+                name: 'Notifications',
+                key: 'Notifications',
+                description: 'Notifications using external services',
+                component: Notifications,
+                icon: NotificationsNoneIcon,
+                displayNav: true,
+                standardNav: true,
+                subRoutes: []
+            },
             {
                 name: 'General',
                 key: 'General',
@@ -147,20 +168,20 @@ const AppRoutes = [
                 standardNav: true,
                 subRoutes: []
             },
-            {
-                name: 'Apis',
-                key: 'Apis',
-                description: 'Api Connectivity',
-                component: Apis,
-                icon: ApiOutlinedIcon,
-                displayNav: true,
-                standardNav: true,
-                subRoutes: []
-            },
+            // {
+            //     name: 'Apis',
+            //     key: 'Apis',
+            //     description: 'Api Connectivity',
+            //     component: Apis,
+            //     icon: ApiOutlinedIcon,
+            //     displayNav: true,
+            //     standardNav: true,
+            //     subRoutes: []
+            // },
             {
                 name: 'UI',
                 key: 'UI',
-                description: 'Calendar, dates and accessibility',
+                description: 'CalendarView, dates and accessibility',
                 component: UI,
                 icon: DisplaySettingsOutlinedIcon,
                 displayNav: true,
@@ -179,33 +200,23 @@ const AppRoutes = [
         standardNav: false,
         subRoutes: [
             {
+                name: 'Events',
+                key: 'Events',
+                description: 'System Events',
+                component: Events,
+                icon: FormatListBulletedIcon,
+                displayNav: true,
+                standardNav: true,
+                subRoutes: []
+            },
+            {
                 name: 'Status',
                 key: 'Status',
                 description: 'Status',
                 component: Status,
                 icon: BarChartIcon,
                 displayNav: true,
-                standardNav: false,
-                subRoutes: []
-            },
-            {
-                name: 'Tasks',
-                key: 'Tasks',
-                description: 'Scheduled tasks',
-                component: Tasks,
-                icon: ScheduleIcon,
-                displayNav: true,
-                standardNav: false,
-                subRoutes: []
-            },
-            {
-                name: 'Events',
-                key: 'Events',
-                description: 'Events',
-                component: Events,
-                icon: FormatListBulletedIcon,
-                displayNav: true,
-                standardNav: false,
+                standardNav: true,
                 subRoutes: []
             },
             {
@@ -215,7 +226,7 @@ const AppRoutes = [
                 component: Updates,
                 icon: FeedIcon,
                 displayNav: true,
-                standardNav: false,
+                standardNav: true,
                 subRoutes: []
             },
             {
@@ -225,7 +236,7 @@ const AppRoutes = [
                 component: Logs,
                 icon: DvrIcon,
                 displayNav: true,
-                standardNav: false,
+                standardNav: true,
                 subRoutes: []
             }
         ]

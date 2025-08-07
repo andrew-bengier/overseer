@@ -6,7 +6,8 @@ const DarkTheme = createTheme({
     palette: {
         mode: 'dark',
         primary: {
-            main: '#67C5AC'
+            main: '#67C5AC',
+            light: '#CBEBE3'
         },
         secondary: {
             main: '#6780C5',
@@ -27,13 +28,20 @@ const DarkTheme = createTheme({
             main: '#d1d1d1',
             text: "black"
         },
-        background: "black",
+        background: "#2d2d2d",
     },
     components: {
+        MuiListItemIcon: {
+            styleOverrides: {
+                root: {
+                    minWidth: 24,
+                }
+            }
+        },
         MuiPaper: {
             styleOverrides: {
                 root: {
-                    backgroundColor: 'black',
+                    backgroundColor: '#2d2d2d',
                 },
             },
         },

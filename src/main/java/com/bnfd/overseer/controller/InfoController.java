@@ -44,8 +44,8 @@ public class InfoController {
         this.gitApiService = gitApiService;
         this.logService = logService;
     }
-    // Todo: More Info: homepage, wiki, socials, donations, feature requests
 
+    // Todo: More Info: homepage, wiki, socials, donations, feature requests
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiData getApiData() {
         log.info("Retrieving api data");

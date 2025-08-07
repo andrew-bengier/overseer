@@ -1,6 +1,5 @@
 package com.bnfd.overseer.controller;
 
-import com.bnfd.overseer.exception.OverseerBadRequestException;
 import com.bnfd.overseer.model.api.ApiKey;
 import com.bnfd.overseer.model.constants.ApiKeyType;
 import com.bnfd.overseer.service.ApiKeyService;
@@ -14,15 +13,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -125,24 +122,6 @@ public class ApiKeyController {
     // endregion - POST -
 
     // region - GET -
-    // TODO: convert here to pageable request (including pageable queries to db)
-    @GetMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> searchApiKeys(@RequestParam Map<String, String> requestParams) {
-        log.info("Searching api keys");
-
-        // TODO: change this validation (temporary)
-        if (StringUtils.isBlank(requestParams.get("name"))) {
-            throw new OverseerBadRequestException(List.of("Missing search param - name"));
-        }
-
-        ApiKeyType apiKeyType = ApiKeyType.valueOf(requestParams.get("name").toUpperCase());
-        if (ObjectUtils.isEmpty(apiKeyType)) {
-            throw new OverseerBadRequestException(List.of("Invalid search param - name"));
-        }
-
-        return new ResponseEntity<>(apiKeyService.getAllApiKeysByName(apiKeyType), HttpStatus.OK);
-    }
-
     @Operation(
             responses = {
                     @ApiResponse(
@@ -172,12 +151,19 @@ public class ApiKeyController {
         return new ResponseEntity<>(apiKeyService.getApiKeyById(id), HttpStatus.OK);
     }
 
-    // TODO: convert here to pageable request (including pageable queries to db)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getApiKeys() {
-        log.info("Retrieving api keys");
+    public ResponseEntity<?> getApiKeys(@RequestParam(required = false) Map<String, String> requestParams) throws Throwable {
+        log.info("Searching api keys");
 
-        return new ResponseEntity<>(apiKeyService.getAllApiKeys(), HttpStatus.OK);
+        if (MapUtils.isNotEmpty(requestParams)) {
+            validationService.validateApiKeySearchParams(requestParams);
+
+            ApiKeyType apiKeyType = ApiKeyType.valueOf(requestParams.get("name").toUpperCase());
+            return new ResponseEntity<>(apiKeyService.getAllApiKeysByName(apiKeyType), HttpStatus.OK);
+        } else {
+            log.info("Retrieving all api keys");
+            return new ResponseEntity<>(apiKeyService.getAllApiKeys(), HttpStatus.OK);
+        }
     }
     // endregion - GET -
 

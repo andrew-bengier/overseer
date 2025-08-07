@@ -45,6 +45,11 @@ const temp = [
 function Updates() {
     const [gitReleases, setGitReleases] = React.useState(null);
 
+    // ? Updates
+    // - branch
+    // - automatic
+    // - mechanism
+
     React.useEffect(() => {
         const fetchInfo = async () => {
             await getGitInfo().then(

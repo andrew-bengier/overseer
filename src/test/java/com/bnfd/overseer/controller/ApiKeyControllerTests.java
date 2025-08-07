@@ -7,6 +7,8 @@ import com.bnfd.overseer.service.ApiKeyService;
 import com.bnfd.overseer.service.ValidationService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.slf4j.MDC;
@@ -19,11 +21,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
+@Slf4j
 @WebMvcTest(ApiKeyController.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class ApiKeyControllerTests {
@@ -187,107 +192,111 @@ public class ApiKeyControllerTests {
     @Nested
     @DisplayName("Get ApiKeys")
     protected class testGetApiKeys {
-        @Test
-        @DisplayName("Acceptable Inputs - Expect OK")
-        public void testGetApiKeys_acceptableInputs_expectOk() throws Throwable {
-            String testId = UUID.randomUUID().toString();
-            ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
-            ApiKey testKey = new ApiKey();
-            testKey.setId(testId);
-            testKey.setName(type);
-            testKey.setKey("test");
+        @Nested
+        @DisplayName("Get All ApiKeys")
+        protected class testGetAllApiKeys {
+            @Test
+            @DisplayName("Acceptable Inputs - Expect OK")
+            public void testGetApiKeys_acceptableInputs_expectOk() throws Throwable {
+                String testId = UUID.randomUUID().toString();
+                ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
+                ApiKey testKey = new ApiKey();
+                testKey.setId(testId);
+                testKey.setName(type);
+                testKey.setKey("test");
 
-            Mockito.doReturn(List.of(testKey)).when(apiKeyService).getAllApiKeys();
+                Mockito.doReturn(List.of(testKey)).when(apiKeyService).getAllApiKeys();
 
-            MvcResult results = mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(MockMvcResultMatchers.status().isOk())
-                    .andReturn();
+                MvcResult results = mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
+                                .accept(MediaType.APPLICATION_JSON))
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andReturn();
 
-            List<ApiKey> response = new ObjectMapper().readValue(results.getResponse().getContentAsString(), new TypeReference<List<ApiKey>>() {
-            });
+                List<ApiKey> response = new ObjectMapper().readValue(results.getResponse().getContentAsString(), new TypeReference<List<ApiKey>>() {
+                });
 
-            Assertions.assertFalse(CollectionUtils.isEmpty(response));
-            Assertions.assertEquals(response.get(0).toString(), testKey.toString());
-            Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeys();
+                Assertions.assertFalse(CollectionUtils.isEmpty(response));
+                Assertions.assertEquals(response.get(0).toString(), testKey.toString());
+                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeys();
+            }
+
+            @Test
+            @DisplayName("None Found - Expect Error")
+            public void testGetApiKeys_noneFound_expectError() throws Throwable {
+                Mockito.doThrow(OverseerNoContentException.class).when(apiKeyService).getAllApiKeys();
+
+                mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
+                                .accept(MediaType.APPLICATION_JSON))
+                        .andExpect(MockMvcResultMatchers.status().isNoContent());
+
+                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeys();
+            }
         }
 
-        @Test
-        @DisplayName("None Found - Expect Error")
-        public void testGetApiKeys_noneFound_expectError() throws Throwable {
-            Mockito.doThrow(OverseerNoContentException.class).when(apiKeyService).getAllApiKeys();
+        @Nested
+        @DisplayName("Search ApiKeys")
+        protected class testSearchApiKeys {
+            @Test
+            @DisplayName("Acceptable Inputs - Expect OK")
+            public void testSearchApiKeys_acceptableInputs_expectOk() throws Throwable {
+                ApiKey testKey = new ApiKey(UUID.randomUUID().toString(), ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)], "test", null);
 
-            mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(MockMvcResultMatchers.status().isNoContent());
+                Map<String, String> requestParams = Map.of("name", testKey.getName().name());
 
-            Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeys();
-        }
-    }
+                Mockito.doReturn(List.of(testKey)).when(apiKeyService).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
 
-    // TODO: add tests for searchApiKeys (Search)
-    @Nested
-    @DisplayName("Search ApiKeys")
-    protected class testSearchApiKeys {
-        String uri = BASE_MAPPING + "/search";
-        ApiKey testKey = new ApiKey(UUID.randomUUID().toString(), ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)], "test", null);
+                MvcResult results = mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
+                                .params(MultiValueMap.fromSingleValue(requestParams))
+                                .accept(MediaType.APPLICATION_JSON))
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andReturn();
 
-        @Test
-        @DisplayName("Valid Search Criteria - Expect OK")
-        public void testSearchApiKeys_validCriteria_expectOk() throws Throwable {
-            Map<String, String> requestParams = Map.of("name", testKey.getName().name());
+                List<ApiKey> response = new ObjectMapper().readValue(results.getResponse().getContentAsString(), new TypeReference<List<ApiKey>>() {
+                });
 
-            Mockito.doReturn(List.of(testKey)).when(apiKeyService).getAllApiKeysByName(Mockito.any());
+                Assertions.assertFalse(CollectionUtils.isEmpty(response));
+                Assertions.assertEquals(response.getFirst().toString(), testKey.toString());
+                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
+            }
 
-            MvcResult results = mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                            .params(MultiValueMap.fromSingleValue(requestParams))
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(MockMvcResultMatchers.status().isOk())
-                    .andReturn();
+            @Test
+            @DisplayName("No Matching Results - Expect Empty List")
+            public void testSearchApiKeys_noResults_expectEmptyList() throws Throwable {
+                Mockito.doThrow(new OverseerNoContentException("No Matching results found")).when(apiKeyService).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
 
-//            List<ApiKey> response = new ObjectMapper().readValue(results.getResponse().getContentAsString(), new TypeReference<List<ApiKey>>() {
-//            });
+                mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
+                                .param("name", ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)].name())
+                                .accept(MediaType.APPLICATION_JSON))
+                        .andExpect(MockMvcResultMatchers.status().isNoContent());
 
-//            Assertions.assertFalse(CollectionUtils.isEmpty(response));
-//            Assertions.assertEquals(response.getFirst().toString(), testKey.toString());
-            Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByName(Mockito.any());
-        }
+                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
+            }
 
-        @Test
-        @DisplayName("No Matching Results - Expect Empty List")
-        public void testSearchApiKeys_noResults_expectEmptyList() throws Throwable {
-            Mockito.doReturn(Collections.emptyList()).when(apiKeyService).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
+            @Test
+            @DisplayName("Missing Search Criteria - Expect Error")
+            public void testSearchApiKeys_missingCriteria_expectError() throws Throwable {
+                Mockito.doThrow(OverseerBadRequestException.class).when(validationService).validateApiKeySearchParams(Mockito.anyMap());
 
-            mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                            .param("name", ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)].name())
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(MockMvcResultMatchers.status().isNoContent());
+                mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
+                                .params(MultiValueMap.fromSingleValue(Map.of("invalidParam", "invalidValue")))
+                                .accept(MediaType.APPLICATION_JSON))
+                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
-            Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
-        }
+                Mockito.verifyNoInteractions(apiKeyService);
+            }
 
-        @Test
-        @DisplayName("Invalid Search Criteria - Expect Error")
-        public void testSearchApiKeys_invalidCriteria_expectError() throws Throwable {
-            mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                            .param("name", "invalid")
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(MockMvcResultMatchers.status().isBadRequest());
+            @Test
+            @DisplayName("Invalid Search Criteria - Expect Error")
+            public void testSearchApiKeys_invalidCriteria_expectError() throws Throwable {
+                Mockito.doThrow(OverseerBadRequestException.class).when(validationService).validateApiKeySearchParams(Mockito.anyMap());
 
-            Mockito.verifyNoInteractions(apiKeyService);
+                mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
+                                .param("name", "invalid")
+                                .accept(MediaType.APPLICATION_JSON))
+                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
-        }
-
-        @Test
-        @DisplayName("Missing Search Criteria - Expect Error")
-        public void testSearchApiKeys_missingCriteria_expectError() throws Throwable {
-            mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                            .params(MultiValueMap.fromSingleValue(Map.of("invalidParam", "invalidValue")))
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(MockMvcResultMatchers.status().isBadRequest());
-
-            Mockito.verifyNoInteractions(apiKeyService);
-
+                Mockito.verifyNoInteractions(apiKeyService);
+            }
         }
     }
 

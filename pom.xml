@@ -153,6 +153,9 @@
                     <append>true</append>
                     <excludes>
                         <exclude>**/src/test/**</exclude>
+                        <exclude>com/bnfd/overseer/**/OverseerController.class/</exclude>
+                        <exclude>com/bnfd/overseer/**/SwaggerController.class/</exclude>
+                        <exclude>com/bnfd/overseer/**/UIController.class/</exclude>
                     </excludes>
                 </configuration>
                 <executions>

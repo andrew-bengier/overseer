@@ -53,7 +53,7 @@ public class ApiKeyService {
         }
 
         // [TEST]
-        log.debug("ApiKey added");
+        //log.debug("ApiKey added");
 
         return overseerMapper.map(entity, ApiKey.class);
     }
@@ -70,7 +70,6 @@ public class ApiKeyService {
         return overseerMapper.map(entity, ApiKey.class);
     }
 
-    // TODO: convert to include all search params (repository needs specs)
     public List<ApiKey> getAllApiKeysByName(ApiKeyType name) {
         List<ApiKeyEntity> entities = apiKeyRepository.findAllByName(name);
 
@@ -112,7 +111,7 @@ public class ApiKeyService {
         }
 
         // [TEST]
-        log.debug("ApiKey updated");
+        //log.debug("ApiKey updated");
 
         return overseerMapper.map(entity, ApiKey.class);
     }
@@ -125,7 +124,7 @@ public class ApiKeyService {
             apiKeyRepository.deleteById(id);
 
             // [TEST]
-            log.debug("ApiKey removed");
+            //log.debug("ApiKey removed");
         } catch (EmptyResultDataAccessException e) {
             throw new RuntimeException("No ApiKeys matching provided id found");
         }

@@ -8,6 +8,7 @@ import com.bnfd.overseer.model.api.ApiKey;
 import com.bnfd.overseer.model.api.Collection;
 import com.bnfd.overseer.model.api.Library;
 import com.bnfd.overseer.model.api.Server;
+import com.bnfd.overseer.model.constants.ApiKeyType;
 import com.bnfd.overseer.model.constants.SettingLevel;
 import com.bnfd.overseer.utils.ValidationUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -27,6 +28,18 @@ public class ValidationService {
     // endregion - Class Variables -
 
     // region - ApiKey -
+    public void validateApiKeySearchParams(Map<String, String> searchParams) throws Throwable {
+        if (StringUtils.isBlank(searchParams.get("name"))) {
+            throw new OverseerBadRequestException(List.of("Missing search param - name"));
+        }
+
+        try {
+            ApiKeyType apiKeyType = ApiKeyType.valueOf(searchParams.get("name").toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            throw new OverseerBadRequestException(List.of("Invalid search param - name"));
+        }
+    }
+
     public void validateApiKey(ApiKey apiKey, String id, boolean isNew) throws Throwable {
         errorType = null;
         errors = new ArrayList<>();

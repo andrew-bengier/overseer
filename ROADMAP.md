@@ -30,7 +30,7 @@ Workflow:
 -- Processing
 -- level (library / collections / etc)
 -- type (media / assets)
--- Scheduled Tasks
+-- Scheduled Events
 -- Manual (with/without test mode)
 -- Playlists
 -- Media Assets

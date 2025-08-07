@@ -1,4 +1,8 @@
 {
+  "src.component.forms.logging.loggingLevelOptionDebug__comment": "Logging level option",
+  "src.component.forms.logging.loggingLevelOptionInfo__comment": "Logging level option",
+  "src.component.forms.logging.loggingLevelOptionTrace__comment": "Logging level option",
+  "src.component.forms.logging.loggingLevelSelectLabel__comment": "Label for logging level selector",
   "src.components.forms.calendar.calendarColumnDateFormatSelectHelperText": "Shown above each column when week is active view",
   "src.components.forms.calendar.calendarColumnDateFormatSelectHelperText__comment": "Helper text for the column date format selector",
   "src.components.forms.calendar.calendarColumnDateFormatSelectLabel": "Week Column Header",
@@ -15,6 +19,10 @@
   "src.components.forms.dates.shortDateFormatSelectLabel__comment": "Label for the short date format selector",
   "src.components.forms.dates.timeFormatSelectLabel": "Time Format",
   "src.components.forms.dates.timeFormatSelectLabel__comment": "Label for the time format selector",
+  "src.components.forms.language.infoLanguageSelectLabel": "Media Info Language",
+  "src.components.forms.language.infoLanguageSelectLabel__comment": "Label for the language selector for all media info",
+  "src.components.forms.language.uiLanguageSelectLabel": "UI Language",
+  "src.components.forms.language.uiLanguageSelectLabel__comment": "Label for the UI language selector",
   "src.components.layouts.header.settingsAuthLogIn": "Login",
   "src.components.layouts.header.settingsAuthLogIn__comment": "Header: menu option for user to login",
   "src.components.layouts.header.settingsAuthLogOut": "Logout",
@@ -27,6 +35,14 @@
   "src.routes.error.error404Title__comment": "Error 404: message displayed for when page cannot be found",
   "src.routes.settings.calendar.calendarSettingsSectionTitle": "Calendar",
   "src.routes.settings.calendar.calendarSettingsSectionTitle__comment": "Title for the calendar section form",
+  "src.routes.settings.connections.buildersSettingsSectionTitle": "Builders",
+  "src.routes.settings.connections.buildersSettingsSectionTitle__comment": "Title for builder connections section form",
+  "src.routes.settings.connections.trackersSettingsSectionTitle": "Trackers",
+  "src.routes.settings.connections.trackersSettingsSectionTitle__comment": "Title for trackers connections section form",
   "src.routes.settings.dates.datesSettingsSectionTitle": "Dates",
-  "src.routes.settings.dates.datesSettingsSectionTitle__comment": "Title for the calendar section form"
+  "src.routes.settings.dates.datesSettingsSectionTitle__comment": "Title for the calendar section form",
+  "src.routes.settings.languages.languagesSettingsSectionTitle": "Languages",
+  "src.routes.settings.languages.languagesSettingsSectionTitle__comment": "Title for the language section form",
+  "src.routes.settings.logging.loggingSettingsSectionTitle": "Logging",
+  "src.routes.settings.logging.loggingSettingsSectionTitle__comment": "Title for the logging section form"
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import {Box, ThemeProvider} from "@mui/material";
-import {Navigate, Outlet, Route, Routes} from "react-router-dom";
+import {Navigate, Outlet, Route, Routes, useNavigate} from "react-router-dom";
 import {ToastContainer} from "react-toastify";
 import Header from "./components/layouts/header/Header";
 import Sidenav from "./components/layouts/sidenav/Sidenav";
@@ -10,10 +10,12 @@ import AppRoutes, {routePaths} from "./routes/AppRoutes";
 import {scrubRoutePath} from "./utils/stringUtils";
 import Error404 from "./routes/Error/Error404";
 import {useSelector} from "react-redux";
+import {checkAppRequirements} from "./services/ValidationService";
 
 const navRoutes = AppRoutes;
 
 function App() {
+    const navigate = useNavigate();
     // const screenSize = useScreenSize();
     // const {theme} = useTheme();
     // const screenSize = useScreenSize();
@@ -33,7 +35,15 @@ function App() {
 
     // [TEST]
     React.useEffect(() => {
-        console.log(navRoutes);
+        console.log('Check init');
+        checkAppRequirements().then(
+            response => {
+                console.log(response);
+                if (!response) {
+                    navigate('/Error/Error404');
+                }
+            }
+        );
     }, [navRoutes]);
 
 
@@ -41,9 +51,9 @@ function App() {
         setSidenavOpen(!isMobile);
     }, [isMobile]);
 
-    React.useEffect(() => {
-        console.log(currentServer);
-    }, [currentServer]);
+    // React.useEffect(() => {
+    //     console.log(currentServer);
+    // }, [currentServer]);
 
     function handleSidenavToggle() {
         setSidenavOpen(!sidenavOpen);
@@ -88,51 +98,16 @@ function App() {
                     >
                         <Routes>
                             <Route element={<Outlet/>}>
-                                <Route index element={<Navigate replace to="/Settings"/>}/>
-                                {/*<Route path="/Settings" element={<Settings/>}/>*/}
-                                {/*<Route path="/Test" element={<Test/>}/>*/}
-                                {navRoutes.filter(route => route.component != null).map((route) => (
+                                {navRoutes.map((route) => (
                                     route.subRoutes ? (
-                                            <Route key={scrubRoutePath(route.key) + '_parent'}>
-                                                <Route
-                                                    key={scrubRoutePath(route.key)}
-                                                    path={routePaths.separator + scrubRoutePath(route.name) + routePaths.all}
-                                                    element={<route.component key={scrubRoutePath(route.key)}
-                                                                              route={route}/>}
-                                                />
-                                                {route.subRoutes.filter(subRoute => subRoute.component != null).map((subRoute) => (
-                                                    subRoute.nested ? (
-                                                        <Route
-                                                            key={scrubRoutePath(route.key) + routePaths.nested}
-                                                            path={routePaths.separator + scrubRoutePath(route.name) + routePaths.nested}
-                                                            element={<subRoute.component
-                                                                key={scrubRoutePath(subRoute.key)}
-                                                                route={subRoute}/>}
-                                                        />
-                                                    ) : (
-                                                        <Route
-                                                            key={scrubRoutePath(route.key) + routePaths.separator + scrubRoutePath(subRoute.key)}
-                                                            path={routePaths.separator + scrubRoutePath(route.name) + routePaths.separator + scrubRoutePath(subRoute.name)}
-                                                            element={<subRoute.component
-                                                                key={scrubRoutePath(subRoute.key)}
-                                                                route={subRoute}/>}
-                                                        />
-                                                    )
-                                                ))}
-                                            </Route>
-                                        )
-                                        : (
+                                        <Route key={scrubRoutePath(route.key) + '_parent'}>
                                             <Route
                                                 key={scrubRoutePath(route.key)}
-                                                path={scrubRoutePath(route.name) + routePaths.all}
-                                                element={<route.component key={scrubRoutePath(route.key)}
-                                                                          route={route}/>}
+                                                path={routePaths.separator + scrubRoutePath(route.name) + routePaths.all}
+                                                element={route.component != null ?
+                                                    <route.component key={scrubRoutePath(route.key)}
+                                                                     route={route}/> : null}
                                             />
-                                        )
-                                ))}
-                                {navRoutes.filter(route => route.component == null).map((route) => (
-                                    route.subRoutes && (
-                                        <Route key={scrubRoutePath(route.key) + '_parent'}>
                                             {route.subRoutes.filter(subRoute => subRoute.component != null).map((subRoute) => (
                                                 subRoute.nested ? (
                                                     <Route
@@ -153,6 +128,15 @@ function App() {
                                                 )
                                             ))}
                                         </Route>
+                                    ) : (
+                                        route.component != null && (
+                                            <Route
+                                                key={scrubRoutePath(route.key)}
+                                                path={scrubRoutePath(route.name) + routePaths.all}
+                                                element={<route.component key={scrubRoutePath(route.key)}
+                                                                          route={route}/>}
+                                            />
+                                        )
                                     )
                                 ))}
                                 <Route path="indx.html" element={<Navigate replace to="/Dashboard"/>}/>
