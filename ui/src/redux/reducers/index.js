@@ -1,10 +1,10 @@
 import {combineReducers} from 'redux';
 import theme from './theme';
-import library from './library';
+import requirements from './requirements';
 
 const rootReducer = combineReducers({
     theme,
-    library
+    requirements
 });
 
 export default rootReducer;

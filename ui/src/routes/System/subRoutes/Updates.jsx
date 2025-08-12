@@ -8,7 +8,7 @@ const temp = [
         title: null,
         description: null,
         url: "https://github.com/Kometa-Team/Kometa/releases/tag/v2.2.0",
-        author: "abengier",
+        author: "meisnate12",
         authorUrl: "https://github.com/meisnate12",
         authorAvatarUrl: "https://avatars.githubusercontent.com/u/1631064?v=4",
         tag: "v2.2.0",

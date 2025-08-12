@@ -9,7 +9,6 @@ import DvrIcon from '@mui/icons-material/Dvr';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import DisplaySettingsOutlinedIcon from '@mui/icons-material/DisplaySettingsOutlined';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import LinkIcon from '@mui/icons-material/Link';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
@@ -31,8 +30,6 @@ import Updates from "./System/subRoutes/Updates";
 import Logs from "./System/subRoutes/Logs";
 import Collections from "./Collections/Collections";
 import Collection from "./Collections/Collection";
-import Libraries from "./Libraries/Libraries";
-import Library from "./Libraries/Library";
 
 export const navRoute = PropTypes.shape({
     name: PropTypes.string.isRequired,
@@ -64,28 +61,6 @@ const AppRoutes = [
         displayNav: true,
         standardNav: true,
         subRoutes: []
-    },
-    {
-        name: 'Libraries',
-        key: 'Libraries',
-        description: 'Libraries',
-        component: Libraries,
-        icon: LibraryBooksIcon,
-        displayNav: false,
-        standardNav: true,
-        subRoutes: [
-            {
-                name: 'Library',
-                key: 'Library',
-                description: 'Library',
-                component: Library,
-                icon: LibraryBooksIcon,
-                displayNav: false,
-                standardNav: true,
-                nested: true,
-                subRoutes: []
-            }
-        ]
     },
     {
         name: 'Collections',
@@ -168,16 +143,6 @@ const AppRoutes = [
                 standardNav: true,
                 subRoutes: []
             },
-            // {
-            //     name: 'Apis',
-            //     key: 'Apis',
-            //     description: 'Api Connectivity',
-            //     component: Apis,
-            //     icon: ApiOutlinedIcon,
-            //     displayNav: true,
-            //     standardNav: true,
-            //     subRoutes: []
-            // },
             {
                 name: 'UI',
                 key: 'UI',

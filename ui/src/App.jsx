@@ -9,42 +9,52 @@ import useScreenSize from "./hooks/useScreenSize";
 import AppRoutes, {routePaths} from "./routes/AppRoutes";
 import {scrubRoutePath} from "./utils/stringUtils";
 import Error404 from "./routes/Error/Error404";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
+import {fetchRequirements} from "./redux/actions/Actions";
 import {checkAppRequirements} from "./services/ValidationService";
 
 const navRoutes = AppRoutes;
 
 function App() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     // const screenSize = useScreenSize();
     // const {theme} = useTheme();
     // const screenSize = useScreenSize();
     const isMobile = useScreenSize(window.width);
     const theme = useSelector((state) => state.theme);
+    const appRequirements = useSelector((state) => state.requirements);
 
-    const currentServer = useSelector((state) => state.server);
+    // const currentServer = useSelector((state) => state.server);
     const [sidenavOpen, setSidenavOpen] = React.useState(!isMobile);
     // TODO: change default sidenav open based on screen size
 
-    // React.useEffect(() => {
-    // console.log("loaded app")
-    // getApiInfo()
-    //   .then(response => console.log(response.data))
-    //   .catch(error => console.log(error));
-    // }, []);
+    React.useEffect(() => {
+        dispatch(fetchRequirements());
+    }, []);
+
+    React.useEffect(() => {
+        console.log(appRequirements);
+        if (appRequirements.requirements.loading === false && !appRequirements.requirements.error) {
+            checkAppRequirements(appRequirements.requirements, navigate);
+        }
+        // getApiInfo()
+        //   .then(response => console.log(response.data))
+        //   .catch(error => console.log(error));
+    }, [appRequirements]);
 
     // [TEST]
-    React.useEffect(() => {
-        console.log('Check init');
-        checkAppRequirements().then(
-            response => {
-                console.log(response);
-                if (!response) {
-                    navigate('/Error/Error404');
-                }
-            }
-        );
-    }, [navRoutes]);
+    // React.useEffect(() => {
+    //     console.log('Check init');
+    //     checkAppRequirements().then(
+    //         response => {
+    //             console.log(response);
+    //             // if (!response) {
+    //             //     navigate('/Error/Error404');
+    //             // }
+    //         }
+    //     );
+    // }, [navRoutes]);
 
 
     React.useEffect(() => {

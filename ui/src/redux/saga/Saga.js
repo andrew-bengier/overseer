@@ -1,9 +1,9 @@
-import {all} from 'redux-saga/effects';
-import library from "./library";
+import {all, fork} from 'redux-saga/effects';
+import requirements from './requirementsSaga';
 
 function* saga() {
     yield all([
-        library
+        fork(requirements)
     ]);
 }
 

@@ -47,6 +47,7 @@ function SelectFormField({
     }
 
     function handleInputChange(event) {
+        event.preventDefault();
         setSelected(event.target.value);
         handleChange(id, event.target.value)
     }

@@ -24,6 +24,9 @@ const config = {
     ],
     devServer: {
         historyApiFallback: true,
+        client: {
+            logging: 'verbose'
+        }
     },
     resolve: {
         extensions: ['.js', '.jsx', '.json']

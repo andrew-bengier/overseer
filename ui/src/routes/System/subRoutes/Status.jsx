@@ -27,7 +27,7 @@ function Status() {
             // TODO: add disk space info here
         };
 
-        fetchInfo().then();
+        // fetchInfo().then();
     }, []);
 
     // TODO: add wiki here
