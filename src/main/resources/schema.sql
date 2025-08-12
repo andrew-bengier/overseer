@@ -2,7 +2,8 @@
 CREATE TABLE IF NOT EXISTS api_keys
 (
     id   VARCHAR2 (255) NOT NULL,
-    name VARCHAR2 (50)  NOT NULL,
+    type VARCHAR2 (50)  NOT NULL,
+    name VARCHAR2 (255) NOT NULL,
     key  VARCHAR2 (255) NOT NULL,
     url  VARCHAR2 (150) NULL,
     PRIMARY KEY (id),

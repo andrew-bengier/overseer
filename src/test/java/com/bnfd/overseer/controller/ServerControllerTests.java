@@ -72,7 +72,8 @@ public class ServerControllerTests {
 
         ApiKey testApiKey = new ApiKey();
         testApiKey.setId(UUID.randomUUID().toString());
-        testApiKey.setName(ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)]);
+        testApiKey.setType(ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)]);
+        testApiKey.setName("test");
         testApiKey.setKey("test");
 
         testServer = new Server();

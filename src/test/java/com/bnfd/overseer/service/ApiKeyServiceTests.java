@@ -60,11 +60,13 @@ public class ApiKeyServiceTests {
         ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
 
         testApiKey = new ApiKey();
-        testApiKey.setName(type);
+        testApiKey.setType(type);
+        testApiKey.setName("test");
         testApiKey.setKey("test");
 
         testApiKeyEntity = new ApiKeyEntity();
-        testApiKeyEntity.setName(type);
+        testApiKeyEntity.setType(type);
+        testApiKeyEntity.setName("test");
         testApiKeyEntity.setKey("test");
     }
 
@@ -159,14 +161,14 @@ public class ApiKeyServiceTests {
                 testApiKeyEntity.setId(UUID.randomUUID().toString());
                 List<ApiKeyEntity> testEntities = List.of(testApiKeyEntity);
 
-                Mockito.when(apiKeyRepository.findAllByName(Mockito.any(ApiKeyType.class))).thenReturn(testEntities);
+                Mockito.when(apiKeyRepository.findAllByType(Mockito.any(ApiKeyType.class))).thenReturn(testEntities);
 
-                List<ApiKey> results = apiKeyService.getAllApiKeysByName(testApiKeyEntity.getName());
+                List<ApiKey> results = apiKeyService.getAllApiKeysByType(testApiKeyEntity.getType());
 
                 Assertions.assertFalse(results.isEmpty());
 
-                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
-                Mockito.verify(apiKeyRepository, Mockito.times(1)).findAllByName(Mockito.any(ApiKeyType.class));
+                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByType(Mockito.any(ApiKeyType.class));
+                Mockito.verify(apiKeyRepository, Mockito.times(1)).findAllByType(Mockito.any(ApiKeyType.class));
                 Mockito.verify(overseerMapper, Mockito.times(1)).map(testEntities, new TypeToken<List<ApiKey>>() {
                 }.getType());
             }
@@ -174,12 +176,12 @@ public class ApiKeyServiceTests {
             @Test
             @DisplayName("None Found - Expect Error")
             public void testGetApiKeyByName_noneFound_expectError() {
-                Mockito.when(apiKeyRepository.findAllByName(Mockito.any())).thenReturn(null);
+                Mockito.when(apiKeyRepository.findAllByType(Mockito.any())).thenReturn(null);
 
-                Assertions.assertThrows(OverseerNoContentException.class, () -> apiKeyService.getAllApiKeysByName(null));
+                Assertions.assertThrows(OverseerNoContentException.class, () -> apiKeyService.getAllApiKeysByType(null));
 
-                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByName(Mockito.any());
-                Mockito.verify(apiKeyRepository, Mockito.times(1)).findAllByName(Mockito.any());
+                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByType(Mockito.any());
+                Mockito.verify(apiKeyRepository, Mockito.times(1)).findAllByType(Mockito.any());
                 Mockito.verifyNoInteractions(overseerMapper);
             }
         }

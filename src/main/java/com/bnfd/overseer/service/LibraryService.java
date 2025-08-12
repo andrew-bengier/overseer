@@ -73,7 +73,7 @@ public class LibraryService {
         ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
 
         MediaServerApiService service;
-        switch (apiKey.getName()) {
+        switch (apiKey.getType()) {
             case PLEX ->
                     service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
@@ -93,7 +93,7 @@ public class LibraryService {
         ApiKeyEntity apiKey = server.getApiKey();
 
         MediaServerApiService service;
-        switch (apiKey.getName()) {
+        switch (apiKey.getType()) {
             case PLEX ->
                     service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
@@ -157,7 +157,7 @@ public class LibraryService {
         ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
 
         MediaServerApiService service;
-        switch (apiKey.getName()) {
+        switch (apiKey.getType()) {
             case PLEX ->
                     service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
@@ -180,7 +180,7 @@ public class LibraryService {
                         .removeIf(show -> ValidationUtils.isArchived(show.getCollections()) || DateUtils.isArchiveEligible(show.getAddedAt(), show.getLastViewedAt()));
 
                 // Check web api service here for series status (only removing if status in ('ended', 'cancelled')
-                apiKeyService.getAllApiKeysByName(ApiKeyType.TMDB).stream().findFirst().ifPresent(tmdbKey -> {
+                apiKeyService.getAllApiKeysByType(ApiKeyType.TMDB).stream().findFirst().ifPresent(tmdbKey -> {
                     TmdbWebApiService tmdbWebApiService = new TmdbWebApiService(overseerMapper, apiKeyService);
                     for (Directory series : container.getDirectories()) {
                         Media seriesData = tmdbWebApiService.getSeries(series.getRatingKey());
@@ -205,7 +205,7 @@ public class LibraryService {
         ApiKeyEntity apiKey = server.getApiKey();
 
         MediaServerApiService service;
-        switch (apiKey.getName()) {
+        switch (apiKey.getType()) {
             case PLEX ->
                     service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");

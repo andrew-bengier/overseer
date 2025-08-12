@@ -38,3 +38,4 @@ target/
 # local
 src/main/resources/git.properties
 /local-api.env
+/.archived/

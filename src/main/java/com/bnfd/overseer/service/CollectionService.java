@@ -117,7 +117,7 @@ public class CollectionService {
         // check media server for media
         MediaServerApiService mediaService;
         ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
-        switch (apiKey.getName()) {
+        switch (apiKey.getType()) {
             case PLEX ->
                     mediaService = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
@@ -448,7 +448,7 @@ public class CollectionService {
 
     protected List<Collection> getCollectionsFromMediaServer(ApiKeyEntity apiKey, Library library, boolean includeMedia) {
         MediaServerApiService service;
-        switch (apiKey.getName()) {
+        switch (apiKey.getType()) {
             case PLEX ->
                     service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");
@@ -476,7 +476,7 @@ public class CollectionService {
         ApiKeyEntity apiKey = overseerMapper.map(server.getApiKey(), ApiKeyEntity.class);
 
         MediaServerApiService service;
-        switch (apiKey.getName()) {
+        switch (apiKey.getType()) {
             case PLEX ->
                     service = ApiUtils.retrieveMediaApiService(PLEX, PlexMediaServerApiService.class, mediaServerApiServices, true);
             default -> throw new OverseerException("Error - service for server type not currently supported");

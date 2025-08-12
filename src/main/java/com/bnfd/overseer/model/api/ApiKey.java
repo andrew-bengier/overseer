@@ -14,8 +14,10 @@ public class ApiKey implements Serializable, Comparable<ApiKey> {
     // region - Class Variables -
     @Schema(accessMode = Schema.AccessMode.READ_ONLY, name = "id", example = "01955a48-58fa-75ae-bdb1-5287fc4341dd", description = "ApiKey Id", format = "UUID")
     private String id;
-    @Schema(name = "name", implementation = ApiKeyType.class, description = "ApiKey Type")
-    private ApiKeyType name;
+    @Schema(name = "type", implementation = ApiKeyType.class, description = "ApiKey Type")
+    private ApiKeyType type;
+    @Schema(name = "name", example = "Plex Server Name", description = "Server Name")
+    private String name;
     @Schema(name = "key", example = "PJ&#8!m}E0a+U*PAPLH.KCe=", description = "API Token")
     private String key;
     @Schema(name = "url", example = "https://127.0.0.0.1:32400", description = "Api Url")
@@ -26,8 +28,9 @@ public class ApiKey implements Serializable, Comparable<ApiKey> {
     public ApiKey() {
     }
 
-    public ApiKey(String id, ApiKeyType name, String key, String url) {
+    public ApiKey(String id, ApiKeyType type, String name, String key, String url) {
         this.id = id;
+        this.type = type;
         this.name = name;
         this.key = key;
         this.url = url;
@@ -43,11 +46,19 @@ public class ApiKey implements Serializable, Comparable<ApiKey> {
         this.id = id;
     }
 
-    public ApiKeyType getName() {
+    public ApiKeyType getType() {
+        return type;
+    }
+
+    public void setType(ApiKeyType type) {
+        this.type = type;
+    }
+
+    public String getName() {
         return name;
     }
 
-    public void setName(ApiKeyType name) {
+    public void setName(String name) {
         this.name = name;
     }
 

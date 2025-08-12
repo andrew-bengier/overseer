@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -119,6 +120,16 @@ public class ApiKeyController {
 
         return new ResponseEntity<>(apiKeyService.addApiKey(apikey), HttpStatus.OK);
     }
+
+    @PostMapping(value = "/requirements", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAppRequirements() throws Throwable {
+        log.info("Retrieving app requirements: api keys");
+
+        List<ApiKey> apiKeys = apiKeyService.getAllApiKeys();
+        apiKeys = apiKeys.stream().filter(apiKey -> ValidationService.getRequiredApiKeys().contains(apiKey.getType())).toList();
+
+        return new ResponseEntity<>(apiKeys, HttpStatus.OK);
+    }
     // endregion - POST -
 
     // region - GET -
@@ -158,8 +169,8 @@ public class ApiKeyController {
         if (MapUtils.isNotEmpty(requestParams)) {
             validationService.validateApiKeySearchParams(requestParams);
 
-            ApiKeyType apiKeyType = ApiKeyType.valueOf(requestParams.get("name").toUpperCase());
-            return new ResponseEntity<>(apiKeyService.getAllApiKeysByName(apiKeyType), HttpStatus.OK);
+            ApiKeyType apiKeyType = ApiKeyType.valueOf(requestParams.get("type").toUpperCase());
+            return new ResponseEntity<>(apiKeyService.getAllApiKeysByType(apiKeyType), HttpStatus.OK);
         } else {
             log.info("Retrieving all api keys");
             return new ResponseEntity<>(apiKeyService.getAllApiKeys(), HttpStatus.OK);

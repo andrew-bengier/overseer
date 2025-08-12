@@ -70,8 +70,8 @@ public class ApiKeyService {
         return overseerMapper.map(entity, ApiKey.class);
     }
 
-    public List<ApiKey> getAllApiKeysByName(ApiKeyType name) {
-        List<ApiKeyEntity> entities = apiKeyRepository.findAllByName(name);
+    public List<ApiKey> getAllApiKeysByType(ApiKeyType type) {
+        List<ApiKeyEntity> entities = apiKeyRepository.findAllByType(type);
 
         if (CollectionUtils.isEmpty(entities)) {
             throw new OverseerNoContentException("No api keys found matching provided search params");

@@ -60,7 +60,8 @@ public class ApiKeyControllerTests {
         public void testAddApiKey_acceptableInputs_expectOk() throws Throwable {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
-            testKey.setName(type);
+            testKey.setType(type);
+            testKey.setName("test");
             testKey.setKey("test");
 
             Mockito.doNothing().when(validationService).validateApiKey(Mockito.any(ApiKey.class), Mockito.any(), Mockito.anyBoolean());
@@ -92,7 +93,8 @@ public class ApiKeyControllerTests {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(UUID.randomUUID().toString());
-            testKey.setName(type);
+            testKey.setType(type);
+            testKey.setName("test");
             testKey.setKey("test");
 
             Mockito.doThrow(OverseerUnprocessableException.class).when(validationService).validateApiKey(Mockito.any(ApiKey.class), Mockito.any(), Mockito.anyBoolean());
@@ -131,7 +133,8 @@ public class ApiKeyControllerTests {
         public void testAddApiKey_invalidDuplicate_expectError() throws Throwable {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
-            testKey.setName(type);
+            testKey.setType(type);
+            testKey.setName("duplicate");
             testKey.setKey("test");
 
             Mockito.doNothing().when(validationService).validateApiKey(Mockito.any(ApiKey.class), Mockito.any(), Mockito.anyBoolean());
@@ -158,7 +161,8 @@ public class ApiKeyControllerTests {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
-            testKey.setName(type);
+            testKey.setType(type);
+            testKey.setName("test");
             testKey.setKey("test");
 
             Mockito.doReturn(testKey).when(apiKeyService).getApiKeyById(Mockito.any());
@@ -202,7 +206,8 @@ public class ApiKeyControllerTests {
                 ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
                 ApiKey testKey = new ApiKey();
                 testKey.setId(testId);
-                testKey.setName(type);
+                testKey.setType(type);
+                testKey.setName("test");
                 testKey.setKey("test");
 
                 Mockito.doReturn(List.of(testKey)).when(apiKeyService).getAllApiKeys();
@@ -239,11 +244,11 @@ public class ApiKeyControllerTests {
             @Test
             @DisplayName("Acceptable Inputs - Expect OK")
             public void testSearchApiKeys_acceptableInputs_expectOk() throws Throwable {
-                ApiKey testKey = new ApiKey(UUID.randomUUID().toString(), ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)], "test", null);
+                ApiKey testKey = new ApiKey(UUID.randomUUID().toString(), ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)], "test", "test", null);
 
-                Map<String, String> requestParams = Map.of("name", testKey.getName().name());
+                Map<String, String> requestParams = Map.of("type", testKey.getType().name());
 
-                Mockito.doReturn(List.of(testKey)).when(apiKeyService).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
+                Mockito.doReturn(List.of(testKey)).when(apiKeyService).getAllApiKeysByType(Mockito.any(ApiKeyType.class));
 
                 MvcResult results = mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
                                 .params(MultiValueMap.fromSingleValue(requestParams))
@@ -256,20 +261,20 @@ public class ApiKeyControllerTests {
 
                 Assertions.assertFalse(CollectionUtils.isEmpty(response));
                 Assertions.assertEquals(response.getFirst().toString(), testKey.toString());
-                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
+                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByType(Mockito.any(ApiKeyType.class));
             }
 
             @Test
             @DisplayName("No Matching Results - Expect Empty List")
             public void testSearchApiKeys_noResults_expectEmptyList() throws Throwable {
-                Mockito.doThrow(new OverseerNoContentException("No Matching results found")).when(apiKeyService).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
+                Mockito.doThrow(new OverseerNoContentException("No Matching results found")).when(apiKeyService).getAllApiKeysByType(Mockito.any(ApiKeyType.class));
 
                 mockMvc.perform(MockMvcRequestBuilders.get(BASE_MAPPING)
-                                .param("name", ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)].name())
+                                .param("type", ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)].name())
                                 .accept(MediaType.APPLICATION_JSON))
                         .andExpect(MockMvcResultMatchers.status().isNoContent());
 
-                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByName(Mockito.any(ApiKeyType.class));
+                Mockito.verify(apiKeyService, Mockito.times(1)).getAllApiKeysByType(Mockito.any(ApiKeyType.class));
             }
 
             @Test
@@ -310,7 +315,8 @@ public class ApiKeyControllerTests {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
-            testKey.setName(type);
+            testKey.setType(type);
+            testKey.setName("test");
             testKey.setKey("test");
 
             Mockito.doNothing().when(validationService).validateApiKey(Mockito.any(ApiKey.class), Mockito.any(), Mockito.anyBoolean());
@@ -338,7 +344,8 @@ public class ApiKeyControllerTests {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
-            testKey.setName(type);
+            testKey.setType(type);
+            testKey.setName("test");
             testKey.setKey("test");
 
             Mockito.doThrow(OverseerUnprocessableException.class).when(validationService).validateApiKey(Mockito.any(ApiKey.class), Mockito.any(), Mockito.anyBoolean());
@@ -383,7 +390,8 @@ public class ApiKeyControllerTests {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
-            testKey.setName(type);
+            testKey.setType(type);
+            testKey.setName("test");
             testKey.setKey("test");
 
             Mockito.doNothing().when(validationService).validateApiKey(Mockito.any(ApiKey.class), Mockito.any(), Mockito.anyBoolean());
@@ -407,7 +415,8 @@ public class ApiKeyControllerTests {
             ApiKeyType type = ApiKeyType.values()[new Random().nextInt(ApiKeyType.values().length)];
             ApiKey testKey = new ApiKey();
             testKey.setId(testId);
-            testKey.setName(type);
+            testKey.setType(type);
+            testKey.setName("test");
             testKey.setKey("test");
 
             Mockito.doNothing().when(validationService).validateApiKey(Mockito.any(ApiKey.class), Mockito.any(), Mockito.anyBoolean());

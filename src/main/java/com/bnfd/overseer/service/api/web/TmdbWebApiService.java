@@ -42,7 +42,7 @@ public class TmdbWebApiService implements WebApiService {
     @Autowired
     public TmdbWebApiService(@Qualifier("overseer-mapper") ModelMapper overseerMapper, ApiKeyService apiKeyService) {
         try {
-            ApiKey apiKey = apiKeyService.getAllApiKeysByName(ApiKeyType.TMDB).getFirst();
+            ApiKey apiKey = apiKeyService.getAllApiKeysByType(ApiKeyType.TMDB).getFirst();
             api = new TmdbApi(apiKey.getKey());
             this.overseerMapper = overseerMapper;
         } catch (PersistenceException | NoSuchElementException exception) {

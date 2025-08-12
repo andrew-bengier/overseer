@@ -21,7 +21,9 @@ public class ApiKeyEntity {
     private String id;
 
     @Enumerated(EnumType.STRING)
-    private ApiKeyType name;
+    private ApiKeyType type;
+
+    private String name;
 
     private String key;
 

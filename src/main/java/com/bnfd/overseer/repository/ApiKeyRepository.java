@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface ApiKeyRepository extends JpaRepository<ApiKeyEntity, String> {
-    List<ApiKeyEntity> findAllByName(ApiKeyType name);
+    List<ApiKeyEntity> findAllByType(ApiKeyType type);
 }

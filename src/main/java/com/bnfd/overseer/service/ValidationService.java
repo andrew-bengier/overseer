@@ -28,15 +28,19 @@ public class ValidationService {
     // endregion - Class Variables -
 
     // region - ApiKey -
+    public static List<ApiKeyType> getRequiredApiKeys() {
+        return List.of(ApiKeyType.PLEX, ApiKeyType.TMDB);
+    }
+
     public void validateApiKeySearchParams(Map<String, String> searchParams) throws Throwable {
-        if (StringUtils.isBlank(searchParams.get("name"))) {
-            throw new OverseerBadRequestException(List.of("Missing search param - name"));
+        if (StringUtils.isBlank(searchParams.get("type"))) {
+            throw new OverseerBadRequestException(List.of("Missing search param - type"));
         }
 
         try {
-            ApiKeyType apiKeyType = ApiKeyType.valueOf(searchParams.get("name").toUpperCase());
+            ApiKeyType apiKeyType = ApiKeyType.valueOf(searchParams.get("type").toUpperCase());
         } catch (IllegalArgumentException exception) {
-            throw new OverseerBadRequestException(List.of("Invalid search param - name"));
+            throw new OverseerBadRequestException(List.of("Invalid search param - type"));
         }
     }
 

@@ -109,6 +109,7 @@ public class OverseerMapper extends ModelMapper {
                 }
 
                 entity.setId(mappingContext.getSource().getId());
+                entity.setKey(mappingContext.getSource().getKey());
                 entity.setName(mappingContext.getSource().getName());
                 entity.setKey(mappingContext.getSource().getKey());
                 entity.setUrl(mappingContext.getSource().getUrl());
@@ -130,6 +131,7 @@ public class OverseerMapper extends ModelMapper {
                 }
 
                 model.setId(mappingContext.getSource().getId());
+                model.setKey(mappingContext.getSource().getKey());
                 model.setName(mappingContext.getSource().getName());
                 model.setKey(mappingContext.getSource().getKey());
                 model.setUrl(mappingContext.getSource().getUrl());
