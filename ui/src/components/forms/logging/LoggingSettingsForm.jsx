@@ -10,9 +10,9 @@ function LoggingSettingsForm({currentLoggingLevel = 'info'}) {
 
     React.useEffect(() => {
         setOptions([
-            {value: 'info', display: formatMessage({id: 'src.component.forms.logging.loggingLevelOptionInfo'})},
-            {value: 'debug', display: formatMessage({id: 'src.component.forms.logging.loggingLevelOptionDebug'})},
-            {value: 'trace', display: formatMessage({id: 'src.component.forms.logging.loggingLevelOptionTrace'})}
+            {value: 'info', display: formatMessage({id: 'src.components.forms.logging.loggingLevelOptionInfo'})},
+            {value: 'debug', display: formatMessage({id: 'src.components.forms.logging.loggingLevelOptionDebug'})},
+            {value: 'trace', display: formatMessage({id: 'src.components.forms.logging.loggingLevelOptionTrace'})}
         ]);
     }, []);
 
