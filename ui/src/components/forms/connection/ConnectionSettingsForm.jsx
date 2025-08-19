@@ -2,6 +2,7 @@ import React from "react";
 import {Button, InputLabel, MenuItem, Select, Stack, TextField} from "@mui/material";
 import PropTypes from "prop-types";
 import {FormattedMessage, useIntl} from "react-intl";
+import {testPlexAccess} from '../../../services/MediaServerConnectionService.js';
 
 function ConnectionSettingsForm({type}) {
     const {formatMessage} = useIntl();
@@ -28,6 +29,8 @@ function ConnectionSettingsForm({type}) {
 
     const handleTest = () => {
         console.log(connectionData);
+
+        testPlexAccess();
     }
 
     return (
