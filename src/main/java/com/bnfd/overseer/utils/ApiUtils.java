@@ -5,6 +5,7 @@ import com.bnfd.overseer.model.constants.ApiKeyType;
 import com.bnfd.overseer.model.constants.BuilderType;
 import com.bnfd.overseer.model.constants.MediaIdType;
 import com.bnfd.overseer.model.constants.MetadataType;
+import com.bnfd.overseer.service.ApiKeyService;
 import com.bnfd.overseer.service.api.media.server.MediaServerApiService;
 import com.bnfd.overseer.service.api.web.WebApiService;
 import com.bnfd.overseer.service.builder.BuilderService;
@@ -22,13 +23,19 @@ public class ApiUtils {
         return service.orElse(null);
     }
 
-    public static <T extends WebApiService> WebApiService retrieveWebApiService(BuilderType type, Class<T> serviceType, List<WebApiService> webApiServices, boolean throwError) {
+    public static <T extends WebApiService> WebApiService retrieveWebApiService(BuilderType type, Class<T> serviceType, ApiKeyService apiKeyService, List<WebApiService> webApiServices, boolean throwError) {
         Optional<WebApiService> service = webApiServices.stream().filter(source -> source.getClass() == serviceType).findFirst();
         if (service.isEmpty() && throwError) {
             throw new OverseerPreConditionRequiredException("Service not currently enabled: " + type.name());
         }
 
-        return service.orElse(null);
+        WebApiService api = service.orElse(null);
+
+        if (api != null && !api.isEnabled()) {
+            api.enableService(apiKeyService);
+        }
+
+        return api;
     }
 
     public static <T extends BuilderService> BuilderService retrieveBuilderService(BuilderType type, Class<T> serviceType, List<BuilderService> builderServices, boolean throwError) {

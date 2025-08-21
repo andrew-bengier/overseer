@@ -181,7 +181,7 @@ public class LibraryService {
 
                 // Check web api service here for series status (only removing if status in ('ended', 'cancelled')
                 apiKeyService.getAllApiKeysByType(ApiKeyType.TMDB).stream().findFirst().ifPresent(tmdbKey -> {
-                    TmdbWebApiService tmdbWebApiService = new TmdbWebApiService(overseerMapper, apiKeyService);
+                    TmdbWebApiService tmdbWebApiService = new TmdbWebApiService(overseerMapper);
                     for (Directory series : container.getDirectories()) {
                         Media seriesData = tmdbWebApiService.getSeries(series.getRatingKey());
                         seriesData.getMetadata().stream().filter(metadata -> metadata.getName().equals(MetadataType.STATUS.name())).findFirst().ifPresent(metadata -> {

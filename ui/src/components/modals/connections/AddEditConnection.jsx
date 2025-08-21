@@ -1,9 +1,19 @@
 import React from "react";
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
 import PropTypes from "prop-types";
-import ConnectionSettingsForm from "../../forms/connection/ConnectionSettingsForm";
+import PlexConnectionForm from "../../forms/connection/PlexConnectionForm";
 
-function AddEditConnection({isOpen, handleClose}) {
+function AddEditConnection({isOpen, type, connectionData, handleClose}) {
+    const updateValues = (values) => {
+        connectionData = values;
+        console.log('Updated connectionData:', connectionData);
+    }
+
+    const closeModal = () => {
+        console.log('Closing connection edit:', connectionData);
+        handleClose(connectionData);
+    }
+
     return (
         <Dialog
             fullWidth
@@ -13,10 +23,13 @@ function AddEditConnection({isOpen, handleClose}) {
         >
             <DialogTitle id="form-dialog-title">Add Connection</DialogTitle>
             <DialogContent dividers>
-                <ConnectionSettingsForm type={"plex"}/>
+                {/*<ConnectionSettingsForm type={"plex"} data={connectionData}/>*/}
+                {type === 'plex' &&
+                    <PlexConnectionForm data={connectionData} handleSave={updateValues}/>
+                }
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Close</Button>
+                <Button onClick={closeModal}>Close</Button>
             </DialogActions>
         </Dialog>
     );
@@ -24,6 +37,8 @@ function AddEditConnection({isOpen, handleClose}) {
 
 AddEditConnection.propTypes = {
     isOpen: PropTypes.bool.isRequired,
+    type: PropTypes.string.isRequired,
+    connectionData: PropTypes.object.isRequired,
     handleClose: PropTypes.func.isRequired,
 }
 

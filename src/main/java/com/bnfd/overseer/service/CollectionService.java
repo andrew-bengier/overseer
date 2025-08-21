@@ -8,7 +8,10 @@ import com.bnfd.overseer.model.api.Collection;
 import com.bnfd.overseer.model.api.*;
 import com.bnfd.overseer.model.constants.*;
 import com.bnfd.overseer.model.persistence.*;
-import com.bnfd.overseer.repository.*;
+import com.bnfd.overseer.repository.ActionRepository;
+import com.bnfd.overseer.repository.CollectionBuilderRepository;
+import com.bnfd.overseer.repository.CollectionRepository;
+import com.bnfd.overseer.repository.SettingRepository;
 import com.bnfd.overseer.service.api.media.server.MediaServerApiService;
 import com.bnfd.overseer.service.api.media.server.PlexMediaServerApiService;
 import com.bnfd.overseer.service.api.web.TmdbWebApiService;
@@ -46,7 +49,7 @@ public class CollectionService {
     private final SettingRepository settingRepository;
     private final ActionRepository actionRepository;
 
-    private final ApiKeyRepository apiKeyRepository;
+    private final ApiKeyService apiKeyService;
 
     private final List<MediaServerApiService> mediaServerApiServices;
     private final List<WebApiService> webApiServices;
@@ -61,7 +64,7 @@ public class CollectionService {
             CollectionBuilderRepository collectionBuilderRepository,
             SettingRepository settingRepository,
             ActionRepository actionRepository,
-            ApiKeyRepository apiKeyRepository,
+            ApiKeyService apiKeyService,
             List<MediaServerApiService> mediaServerApiServices,
             List<BuilderService> builderServices,
             List<WebApiService> webApiServices) {
@@ -70,7 +73,7 @@ public class CollectionService {
         this.collectionBuilderRepository = collectionBuilderRepository;
         this.settingRepository = settingRepository;
         this.actionRepository = actionRepository;
-        this.apiKeyRepository = apiKeyRepository;
+        this.apiKeyService = apiKeyService;
         this.mediaServerApiServices = mediaServerApiServices;
         this.builderServices = builderServices;
         this.webApiServices = webApiServices;
@@ -172,7 +175,7 @@ public class CollectionService {
         Map<String, String> options = Map.of("trackingType", CollectionTrackingType.UNTRACKED.name());
         List<Collection> collections = getCollections(server, library, options);
         if (!CollectionUtils.isEmpty(collections)) {
-            WebApiService tmdbWebApiService = ApiUtils.retrieveWebApiService(TMDB, TmdbWebApiService.class, webApiServices, true);
+            WebApiService tmdbWebApiService = ApiUtils.retrieveWebApiService(TMDB, TmdbWebApiService.class, apiKeyService, webApiServices, true);
             for (Collection collection : collections) {
                 log.info("Processing collection {}", collection.getName());
                 List<Collection> potentialMatches = tmdbWebApiService.searchCollections(collection.getName());
@@ -468,7 +471,7 @@ public class CollectionService {
     // process - getCollectionMedia
     public List<Media> getCollectionMedia(String collectionId) {
 //        return tmdbWebApiService.getMediaFromCollection(collectionId);
-        WebApiService tmdbWebApiService = ApiUtils.retrieveWebApiService(TMDB, TmdbWebApiService.class, webApiServices, true);
+        WebApiService tmdbWebApiService = ApiUtils.retrieveWebApiService(TMDB, TmdbWebApiService.class, apiKeyService, webApiServices, true);
         return List.of(tmdbWebApiService.getSeries(collectionId));
     }
 

@@ -39,7 +39,8 @@ export function checkAppRequirements(requirements, navigate) {
     if (requirements) {
         if (requirements.apiKeys?.length === 0) {
             toast.error('No api keys found. Please add at the required api keys.');
-            navigate('/Settings/Connections', {state: {openAddEditConnectionModal: true}});
+            // navigate('/Settings/Connections', {state: {openAddEditConnectionModal: true}});
+            navigate('/Settings/Connections');
         }
 
         if (requirements.mediaServers?.length === 0) {

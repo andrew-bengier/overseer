@@ -35,21 +35,32 @@ import java.util.*;
 public class TmdbWebApiService implements WebApiService {
     // region - Class Variables -
     private final ModelMapper overseerMapper;
-    private final TmdbApi api;
+    private boolean enabled;
+    private TmdbApi api;
     // endregion - Class Variables -
 
     // region - Constructors -
     @Autowired
-    public TmdbWebApiService(@Qualifier("overseer-mapper") ModelMapper overseerMapper, ApiKeyService apiKeyService) {
+    public TmdbWebApiService(@Qualifier("overseer-mapper") ModelMapper overseerMapper) {
+        this.overseerMapper = overseerMapper;
+        this.enabled = false;
+    }
+    // endregion - Constructors -
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public void enableService(ApiKeyService apiKeyService) {
         try {
             ApiKey apiKey = apiKeyService.getAllApiKeysByType(ApiKeyType.TMDB).getFirst();
             api = new TmdbApi(apiKey.getKey());
-            this.overseerMapper = overseerMapper;
         } catch (PersistenceException | NoSuchElementException exception) {
             throw new OverseerPreConditionRequiredException("Tmdb API keys not found");
         }
     }
-    // endregion - Constructors -
 
     @Override
     public List<Media> getMediaFromCollection(String collectionId) {

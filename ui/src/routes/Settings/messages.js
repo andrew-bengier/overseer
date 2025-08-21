@@ -21,6 +21,11 @@ export default defineMessages({
         id: 'src.routes.settings.logging.loggingSettingsSectionTitle',
         description: 'Title for the logging section form'
     },
+    requiredSettingsSectionTitle: {
+        defaultMessage: 'Required',
+        id: 'src.routes.settings.connections.requiredSettingsSectionTitle',
+        description: 'Title for required connections section form'
+    },
     buildersSettingsSectionTitle: {
         defaultMessage: 'Builders',
         id: 'src.routes.settings.connections.buildersSettingsSectionTitle',
