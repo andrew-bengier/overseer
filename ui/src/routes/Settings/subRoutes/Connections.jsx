@@ -1,12 +1,8 @@
 import React from "react";
-import BlockSection from "../../../components/layouts/sections/BlockSection";
 import {useIntl} from "react-intl";
-import AddEditConnection from "../../../components/modals/connections/AddEditConnection";
 import {useLocation, useSearchParams} from "react-router-dom";
-import {handlePlexCallback} from "../../../services/MediaServerConnectionService";
-import {Stack} from "@mui/material";
-import BasicInfoCard from "../../../components/info/cards/BasicInfoCard";
-import AddCard from "../../../components/actions/add/AddCard";
+import {handlePlexCallback, plexLogin} from "../../../services/MediaServerConnectionService";
+import {Button} from "@mui/material";
 import {useDispatch, useSelector} from "react-redux";
 
 function Connections() {
@@ -19,7 +15,15 @@ function Connections() {
     const requirements = useSelector((state) => state.requirements);
     // const plexConnection = useSelector((state) => state.plexAuth);
     const [addEditConnectionOpen, setAddEditConnectionOpen] = React.useState(state?.openAddEditConnectionModal || false);
-    const [connectionData, setConnectionData] = React.useState({});
+    const [connectionData, setConnectionData] = React.useState();
+
+    const [loginWindow, setLoginWindow] = React.useState(null);
+
+    const openLoginWindow = async () => {
+        const url = await plexLogin(null, true);
+        const newWindow = window.open(url, '_blank', 'width=500,height=700');
+        setLoginWindow(newWindow);
+    }
 
     // // [TEST]
     // React.useEffect(() => {
@@ -32,24 +36,34 @@ function Connections() {
 
     React.useEffect(() => {
         const plexPin = searchParams.get('plexPin');
-        const plexName = searchParams.get('plexName');
-        const plexUrl = searchParams.get('plexUrl');
+        // const plexName = searchParams.get('plexName');
+        // const plexUrl = searchParams.get('plexUrl');
 
         if (plexPin) {
-            let plexAuth = {
-                name: plexName,
-                url: plexUrl,
-                key: plexPin,
-            };
-            console.log('Plex auth:', plexAuth);
+            if (loginWindow && !loginWindow.closed) {
+                loginWindow.close();
+                window.close()
+                setLoginWindow(null);
+            }
+            if (window.opener) {
+                opener.location.href = '?plexPin=' + plexPin;
+                window.close();
+            }
+
+            // let plexAuth = {
+            //     name: plexName,
+            //     url: plexUrl,
+            //     key: plexPin,
+            // };
+            // console.log('Plex auth:', plexAuth);
 
             handlePlexCallback(plexPin).then(response => {
                 // console.log('Plex auth Token:', response);
                 // update requirements here via api
                 // dispatch(updateToken(response));
 
-                setConnectionData({...plexAuth, type: 'plex', key: response});
-                setAddEditConnectionOpen(true);
+                setConnectionData({type: 'plex', pin: plexPin, key: response});
+                // setAddEditConnectionOpen(true);
             });
         }
     }, [searchParams]);
@@ -83,19 +97,26 @@ function Connections() {
     return (
         <React.Fragment>
             Connections
-            <BlockSection
-                header={formatMessage({id: 'src.routes.settings.connections.requiredSettingsSectionTitle'})}
-                width="60%"
-                content={
-                    <Stack direction="row" spacing={2}>
-                        <BasicInfoCard information={{name: "Plex"}}
-                                       handleClick={() => handleAddEditOpen('plex')}/>
-                        <BasicInfoCard information={{name: "TMDB"}}
-                                       handleClick={() => handleAddEditOpen('tmdb')}/>
-                        <AddCard handleClick={() => handleAddEditOpen(null)}/>
-                    </Stack>
-                }
-            />
+            <Button onClick={openLoginWindow}>
+                Click me
+            </Button>
+
+            {connectionData &&
+                <pre>{JSON.stringify(connectionData, null, 2)}</pre>
+            }
+            {/*<BlockSection*/}
+            {/*    header={formatMessage({id: 'src.routes.settings.connections.requiredSettingsSectionTitle'})}*/}
+            {/*    width="60%"*/}
+            {/*    content={*/}
+            {/*        <Stack direction="row" spacing={2}>*/}
+            {/*            <BasicInfoCard information={{name: "Plex"}}*/}
+            {/*                           handleClick={() => handleAddEditOpen('plex')}/>*/}
+            {/*            <BasicInfoCard information={{name: "TMDB"}}*/}
+            {/*                           handleClick={() => handleAddEditOpen('tmdb')}/>*/}
+            {/*            <AddCard handleClick={() => handleAddEditOpen(null)}/>*/}
+            {/*        </Stack>*/}
+            {/*    }*/}
+            {/*/>*/}
             {/*<BlockSection*/}
             {/*    header={formatMessage({id: 'src.routes.settings.connections.buildersSettingsSectionTitle'})}*/}
             {/*    width="60%"*/}
@@ -110,8 +131,8 @@ function Connections() {
             {/*    //     // <ConnectionSettingsForm/>*/}
             {/*    // }*/}
             {/*/>*/}
-            <AddEditConnection isOpen={addEditConnectionOpen} type={connectionData.type} connectionData={connectionData}
-                               handleClose={handleAddEditClose}/>
+            {/*<AddEditConnection isOpen={addEditConnectionOpen} type={connectionData.type} connectionData={connectionData}*/}
+            {/*                   handleClose={handleAddEditClose}/>*/}
         </React.Fragment>
     );
 }
