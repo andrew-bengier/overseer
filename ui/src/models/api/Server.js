@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 
 export const Server = {
-    id: PropTypes.string.isRequired,
+    id: PropTypes.string,
     name: PropTypes.string.isRequired,
     // TODO: move apikey to another shape
     apiKey: PropTypes.object,

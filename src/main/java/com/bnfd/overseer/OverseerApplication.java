@@ -1,5 +1,6 @@
 package com.bnfd.overseer;
 
+import com.bnfd.overseer.config.SystemTrayConfig;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -22,6 +23,7 @@ public class OverseerApplication {
 
     public static void main(String[] args) {
         context = SpringApplication.run(OverseerApplication.class, args);
+        SystemTrayConfig.setupTray();
     }
 
     public static void restart() {

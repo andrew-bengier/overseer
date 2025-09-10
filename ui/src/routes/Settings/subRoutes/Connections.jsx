@@ -4,6 +4,8 @@ import {useLocation, useSearchParams} from "react-router-dom";
 import {handlePlexCallback, plexLogin} from "../../../services/MediaServerConnectionService";
 import {Button} from "@mui/material";
 import {useDispatch, useSelector} from "react-redux";
+import ConnectionSettingsForm from "../../../components/forms/connection/ConnectionSettingsForm";
+import BlockSection from "../../../components/layouts/sections/BlockSection";
 
 function Connections() {
     const location = useLocation();
@@ -117,13 +119,13 @@ function Connections() {
             {/*        </Stack>*/}
             {/*    }*/}
             {/*/>*/}
-            {/*<BlockSection*/}
-            {/*    header={formatMessage({id: 'src.routes.settings.connections.buildersSettingsSectionTitle'})}*/}
-            {/*    width="60%"*/}
-            {/*    // content={*/}
-            {/*    //     // <ConnectionSettingsForm/>*/}
-            {/*    // }*/}
-            {/*/>*/}
+            <BlockSection
+                header={formatMessage({id: 'src.routes.settings.connections.buildersSettingsSectionTitle'})}
+                width="60%"
+                content={
+                    <ConnectionSettingsForm type={connectionData?.type || 'plex'} data={connectionData}/>
+                }
+            />
             {/*<BlockSection*/}
             {/*    header={formatMessage({id: 'src.routes.settings.connections.trackersSettingsSectionTitle'})}*/}
             {/*    width="60%"*/}

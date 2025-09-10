@@ -18,10 +18,10 @@ export async function plexLogin(auth, newWindow = false) {
             let [hostedUILink, pinId] = data;
             const url = new URL(hostedUILink);
             url.searchParams.append("plexPin", pinId.toString());
-            // if (auth) {
-            //     url.searchParams.append("plexName", auth.name);
-            //     url.searchParams.append("plexUrl", auth.url);
-            // }
+            if (auth) {
+                url.searchParams.append("plexName", auth.name);
+                url.searchParams.append("plexUrl", auth.url);
+            }
             let link = url.toString() + '?' + url.searchParams.toString();
             clientInformation.forwardUrl = link;
 

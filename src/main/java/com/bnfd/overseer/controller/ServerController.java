@@ -32,7 +32,7 @@ public class ServerController {
 
     // region - POST -
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addServer(@RequestParam(required = false, defaultValue = "false") boolean includeLibraries, @RequestBody Server server) throws Throwable {
+    public ResponseEntity<?> addServer(@RequestParam(required = false, defaultValue = "true") boolean includeLibraries, @RequestBody Server server) throws Throwable {
         log.info("Adding server - including libraries {}", includeLibraries);
 
         validationService.validateServer(server, null, true);

@@ -26,3 +26,5 @@ export function generateTextHeaders() {
         'X-User-ID': 'overseer-ui'
     };
 }
+
+export const url_prefix = 'https://';

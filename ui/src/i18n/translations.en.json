@@ -57,6 +57,8 @@
   "src.routes.settings.connections.trackersSettingsSectionTitle__comment": "Title for trackers connections section form",
   "src.routes.settings.dates.datesSettingsSectionTitle": "Dates",
   "src.routes.settings.dates.datesSettingsSectionTitle__comment": "Title for the calendar section form",
+  "src.routes.settings.defaults.defaultSettingsSectionTitle": "Default Settings",
+  "src.routes.settings.defaults.defaultSettingsSectionTitle__comment": "Title for default settings section",
   "src.routes.settings.languages.languagesSettingsSectionTitle": "Languages",
   "src.routes.settings.languages.languagesSettingsSectionTitle__comment": "Title for the language section form",
   "src.routes.settings.logging.loggingSettingsSectionTitle": "Logging",

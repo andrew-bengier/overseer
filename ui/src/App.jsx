@@ -11,7 +11,6 @@ import {scrubRoutePath} from "./utils/stringUtils";
 import Error404 from "./routes/Error/Error404";
 import {useDispatch, useSelector} from "react-redux";
 import {fetchRequirements} from "./redux/actions/Actions";
-import {checkAppRequirements} from "./services/ValidationService";
 
 const navRoutes = AppRoutes;
 
@@ -35,9 +34,9 @@ function App() {
 
     React.useEffect(() => {
         console.log(appRequirements);
-        if (appRequirements.requirements.loading === false && !appRequirements.requirements.error) {
-            checkAppRequirements(appRequirements.requirements, navigate);
-        }
+        // if (appRequirements.requirements.loading === false && !appRequirements.requirements.error) {
+        // checkAppRequirements(appRequirements.requirements, navigate);
+        // }
         // getApiInfo()
         //   .then(response => console.log(response.data))
         //   .catch(error => console.log(error));

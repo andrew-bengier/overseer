@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {Server} from "../../../models/server/Server";
+import {Server} from "../../../models/api/Server";
 import {Card, CardHeader, CardMedia, IconButton, Typography} from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {useDispatch} from "react-redux";

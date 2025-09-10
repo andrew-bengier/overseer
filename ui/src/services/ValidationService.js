@@ -28,7 +28,8 @@ export async function getAppRequirements() {
                     id: '01989a89-9491-7e8a-8740-cd595339cef2',
                     name: 'PLEX',
                     key: '1234567890',
-                    url: 'http://192.168.1.185:32400/web/index.html'
+                    // url: 'http://192.168.1.185:32400/web/index.html'
+                    url: 'https://app.plex.tv/desktop/#!/'
                 },
             ]
         }, status: 200

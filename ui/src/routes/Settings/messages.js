@@ -40,5 +40,10 @@ export default defineMessages({
         defaultMessage: 'Notifications',
         id: 'src.routes.notifications.notificationsSettingsSectionTitle',
         description: 'Title for notifications section form'
+    },
+    defaultSettingsSectionTitle: {
+        defaultMessage: 'Default Settings',
+        id: 'src.routes.settings.defaults.defaultSettingsSectionTitle',
+        description: 'Title for default settings section'
     }
 });
